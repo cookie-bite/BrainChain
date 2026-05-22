@@ -92,11 +92,12 @@
 
 .quest {
     position: absolute;
-    top: -230px;
+    top: -280px;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    height: 180px;
+    min-height: 180px;
+    height: auto;
     text-align: center;
 }
 
@@ -122,15 +123,18 @@
 }
 
 .choice {
-    flex-basis: calc(50% - 15px);
+    flex-basis: calc(50% - 8px);
     align-items: center;
     justify-content: center;
-    width: 250px;
-    height: 60px;
-    border-radius: 30px;
+    min-height: 50px;
+    height: auto;
+    border-radius: 25px;
     background-color: var(--ultrathin-material);
     transition: all .3s ease-in-out;
     cursor: pointer;
+    padding: 10px 20px;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 @media(hover: hover) and (pointer: fine) {
@@ -142,8 +146,10 @@
 
 .choiceLbl {
     font-family: 'Barlow Condensed';
-    font-size: 30px;
+    font-size: 20px;
     font-weight: 400;
+    text-align: center;
+    word-break: break-word;
 }
 
 .choice:active {

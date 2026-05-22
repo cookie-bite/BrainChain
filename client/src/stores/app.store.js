@@ -2,7 +2,7 @@ import { proxy } from 'valtio'
 import { proxyWithHistory } from 'valtio/utils'
 
 
-export const STUI = proxyWithHistory({ name: 'Home', showControls: true, showIndicator: false })
+export const STUI = proxyWithHistory({ name: 'Play', showControls: true, showIndicator: false })
 
 export const STApp = proxy({ render: false })
 
