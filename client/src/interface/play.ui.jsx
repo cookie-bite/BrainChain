@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState, useRef, memo } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useSnapshot } from 'valtio'
 import { usePostHog } from 'posthog-js/react'
@@ -6,6 +6,40 @@ import { STIndicator, STProfile } from '../stores/app.store'
 import { Icon, Matrix } from '../components/core.cmp'
 
 import sty from '../styles/modules/play.module.css'
+
+
+const CountdownTimer = memo(({ isActive }) => {
+    const [countdown, setCountdown] = useState(60)
+    const countdownRef = useRef(null)
+
+    useEffect(() => {
+        if (isActive) {
+            setCountdown(60)
+            countdownRef.current = setInterval(() => {
+                setCountdown(prev => {
+                    if (prev <= 1) {
+                        clearInterval(countdownRef.current)
+                        return 0
+                    }
+                    return prev - 1
+                })
+            }, 1000)
+        } else {
+            clearInterval(countdownRef.current)
+            setCountdown(60)
+        }
+        return () => clearInterval(countdownRef.current)
+    }, [isActive])
+
+    if (!isActive) return null
+
+    return (
+        <div className={sty.playCountdown}>
+            <h1 className={sty.playCountdownLbl} style={{ color: countdown <= 10 ? 'var(--system-red)' : 'var(--system-yellow)' }}>{countdown}s</h1>
+            <h5 className={sty.playCountdownSbtl}>Waiting for players...</h5>
+        </div>
+    )
+})
 
 
 export const Play = ({ ws, core }) => {
@@ -30,28 +64,6 @@ export const Play = ({ ws, core }) => {
         'Technology': 'code-slash'
     }
 
-
-    const [countdown, setCountdown] = useState(60)
-    const countdownRef = useRef(null)
-
-    useEffect(() => {
-        if (SSProfile.gameID) {
-            setCountdown(60)
-            countdownRef.current = setInterval(() => {
-                setCountdown(prev => {
-                    if (prev <= 1) {
-                        clearInterval(countdownRef.current)
-                        return 0
-                    }
-                    return prev - 1
-                })
-            }, 1000)
-        } else {
-            clearInterval(countdownRef.current)
-            setCountdown(60)
-        }
-        return () => clearInterval(countdownRef.current)
-    }, [SSProfile.gameID])
 
     const changeFilter = (filter) => {
         if (filter === 'topic') {
@@ -132,10 +144,7 @@ export const Play = ({ ws, core }) => {
                             <h2 className={sty.playTopicLbl}>{SSIndicator.topic.name}</h2>
                             <h5 className={sty.playDurationLbl}>{SSIndicator.duration} questions</h5>
                         </div>
-                        {SSProfile.gameID && <div className={sty.playCountdown}>
-                            <h1 className={sty.playCountdownLbl} style={{ color: countdown <= 10 ? 'var(--system-red)' : 'var(--system-yellow)' }}>{countdown}s</h1>
-                            <h5 className={sty.playCountdownSbtl}>Waiting for players...</h5>
-                        </div>}
+                        <CountdownTimer isActive={!!SSProfile.gameID} />
                         <div className={sty.playPlayers}>
                             {SSProfile.gameID
                                 ? SSIndicator.players.list.map((player, index) => (
