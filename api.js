@@ -20,6 +20,7 @@ require('dotenv/config')
 const lobby = {}
 const rooms = {}
 const liveGames = {}
+const gameTimers = {}
 const games = genGame(40)
 
 
@@ -59,6 +60,103 @@ const init = () => {
 
     // For generated games
     Object.keys(games).forEach((id) => rooms[id] = {})
+}
+
+const startGameWithBots = (gameID) => {
+    if (!games[gameID]) return // already started or deleted
+
+    const game = games[gameID]
+
+    // Add bots if only 1 player (the creator)
+    if (game.players.joined <= 1) {
+        const botNames = ['Salvador Johnston', 'Wallace Long', 'Howard Beck', 'Alfredo Curtis', 'Stephen Williamson', 'Logan Carter', 'Travis Stevens', 'Derrick Kuhn', 'Kylie Grant', 'Jonathan Gordon']
+        const shuffled = botNames.sort(() => Math.random() > 0.5 ? 1 : -1)
+
+        for (let i = 0; i < 2; i++) {
+            const botID = genRandom()
+            const bot = { id: botID, name: shuffled[i], color: genColor(), os: 'AI', isFinished: false }
+            game.players.list.push(bot)
+            game.players.joined++
+            game.answers[botID] = Array(game.duration).fill({ answer: '', isTrue: null })
+        }
+    }
+
+    // Move to liveGames and start
+    game.players.all = game.players.joined
+    liveGames[gameID] = game
+    liveGames[gameID].quiz = genQuiz(liveGames[gameID].topic.name, liveGames[gameID].duration)
+    delete games[gameID]
+
+    // Deduct tokens from real players
+    Object.keys(rooms[gameID]).forEach((id) => {
+        lobby[id].balance -= liveGames[gameID].token
+        sendUser(id, { command: 'UPDT_BLNC', balance: lobby[id].balance })
+    })
+
+    sendRoom(gameID, { command: 'START_GAME', quiz: liveGames[gameID].quiz })
+    sendLobby({ command: 'UPDT_GAMES', games: getArray(games) })
+
+    // Simulate bot answers after random delays
+    liveGames[gameID].players.list.forEach((player) => {
+        if (player.os === 'AI') {
+            const quiz = liveGames[gameID].quiz
+            let delay = 2000 + Math.random() * 3000
+
+            quiz.forEach((q, index) => {
+                delay += 1500 + Math.random() * 4000
+                setTimeout(() => {
+                    if (!liveGames[gameID]) return
+                    const isCorrect = Math.random() > 0.45
+                    const answer = isCorrect ? q.correct : q.choices.find(c => c !== q.correct)
+                    liveGames[gameID].answers[player.id][index] = { answer, isTrue: isCorrect }
+                    sendRoom(gameID, { command: 'UPDT_ANSR', answers: liveGames[gameID].answers })
+
+                    // Check if bot finished all questions
+                    if (liveGames[gameID].answers[player.id].findIndex(a => a.answer === '') === -1) {
+                        const pi = liveGames[gameID].players.list.findIndex(p => p.id === player.id)
+                        liveGames[gameID].players.list[pi].isFinished = true
+                        liveGames[gameID].players.list[pi].timeSpent = delay
+                        sendRoom(gameID, { command: 'UPDT_PLYRS', players: liveGames[gameID].players })
+
+                        // Check if ALL players finished
+                        if (liveGames[gameID].players.list.findIndex(p => p.isFinished === false) === -1) {
+                            finishGame(gameID)
+                        }
+                    }
+                }, delay)
+            })
+        }
+    })
+
+    delete gameTimers[gameID]
+}
+
+const finishGame = (gameID) => {
+    if (!liveGames[gameID]) return
+
+    let stats = []
+    liveGames[gameID].players.list.forEach((player) => {
+        if (lobby[player.id]) lobby[player.id].gameID = ''
+        stats.push({
+            id: player.id,
+            name: player.name,
+            color: player.color,
+            timeSpent: player.timeSpent,
+            correct: liveGames[gameID].answers[player.id].filter(a => a.isTrue).length,
+            wrong: liveGames[gameID].answers[player.id].filter(a => a.isTrue === false).length
+        })
+    })
+
+    stats = stats.sort((a, b) => a.timeSpent - b.timeSpent).sort((a, b) => a.wrong - b.wrong).sort((a, b) => b.correct - a.correct)
+
+    if (lobby[stats[0].id]) {
+        lobby[stats[0].id].balance += liveGames[gameID].players.list.length * liveGames[gameID].token
+        sendUser(stats[0].id, { command: 'UPDT_BLNC', balance: lobby[stats[0].id].balance })
+    }
+    sendRoom(gameID, { command: 'FNSH_GAME', winner: stats[0] })
+
+    delete rooms[gameID]
+    delete liveGames[gameID]
 }
 
 
@@ -179,7 +277,7 @@ wss.on('connection', (ws) => {
                 topic: req.game.topic,
                 duration: req.game.duration,
                 token: req.game.token,
-                players: { all: req.game.players.all, joined: 1, list: [{ id: userID, name: req.user.name, color: req.user.color, os: lobby[userID].os, isFinished: false }] },
+                players: { all: 0, joined: 1, list: [{ id: userID, name: req.user.name, color: req.user.color, os: lobby[userID].os, isFinished: false }] },
                 answers: { [userID]: Array(req.game.duration).fill({ answer: '', isTrue: null }) }
             }
 
@@ -189,6 +287,9 @@ wss.on('connection', (ws) => {
             ws.send(JSON.stringify({ command: 'JOIN_GAME', game: games[gameID] }))
             sendRoom(gameID, { command: 'UPDT_GAME', game: games[gameID] })
             sendLobby({ command: 'UPDT_GAMES', games: getArray(games) })
+
+            // Auto-start after 60 seconds
+            gameTimers[gameID] = setTimeout(() => startGameWithBots(gameID), 60000)
         } else if (req.command === 'SEND_ANSR') {
             if (req.answer) {
                 liveGames[req.id].answers[userID][req.index] = { answer: req.answer, isTrue: req.answer === liveGames[req.id].quiz[req.index].correct }
@@ -206,31 +307,7 @@ wss.on('connection', (ws) => {
             }
 
             if (liveGames[req.id].players.list.findIndex(p => p.isFinished === false) === -1) {
-                let stats = []
-
-                liveGames[req.id].players.list.forEach((player) => {
-                    if (lobby[player.id]) lobby[player.id].gameID = ''
-
-                    stats.push({
-                        id: player.id,
-                        name: player.name,
-                        color: player.color,
-                        timeSpent: player.timeSpent,
-                        correct: liveGames[req.id].answers[player.id].filter(a => a.isTrue).length,
-                        wrong: liveGames[req.id].answers[player.id].filter(a => a.isTrue === false).length
-                    })
-                })
-
-                stats = stats.sort((a, b) => a.timeSpent - b.timeSpent).sort((a, b) => a.wrong - b.wrong).sort((a, b) => b.correct - a.correct)
-
-                if (lobby[stats[0].id]) {
-                    lobby[stats[0].id].balance += liveGames[req.id].players.list.length * liveGames[req.id].token
-                    sendUser(stats[0].id, { command: 'UPDT_BLNC', balance: lobby[stats[0].id].balance })
-                }
-                sendRoom(req.id, { command: 'FNSH_GAME', winner: stats[0] })
-
-                delete rooms[req.id]
-                delete liveGames[req.id]
+                finishGame(req.id)
             }
         }
     })

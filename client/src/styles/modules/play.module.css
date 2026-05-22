@@ -148,6 +148,32 @@
     color: var(--primary-label);
 }
 
+.playCountdown {
+    position: absolute;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    bottom: 50px;
+}
+
+.playCountdownLbl {
+    font-size: 36px;
+    font-weight: 700;
+    animation: pulse 1s ease-in-out infinite;
+}
+
+.playCountdownSbtl {
+    font-size: 14px;
+    font-weight: 400;
+    color: var(--secondary-label);
+    margin-top: 2px;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
 .playBtns {
     position: absolute;
     bottom: -135px;

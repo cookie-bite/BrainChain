@@ -50,12 +50,8 @@ export const Controls = ({ core }) => {
             const topics = ['All', 'AI', 'Anatomy', 'Art', 'Astronomy', 'Cinema', 'Economics', 'Game', 'Geography', 'Mathematics', 'Mixed', 'Music', 'Sports', 'Technology']
             topic = topics.at(1 + topics.indexOf(SSFilters.topic) - topics.length)
             STFilters.topic = topic
-        } else if (filter === 'players') {
-            const playersCount = ['All', 2, 3, 4, 6, 8]
-            players = playersCount.at(1 + playersCount.indexOf(SSFilters.players) - playersCount.length)
-            STFilters.players = players
         } else if (filter === 'duration') {
-            const durations = ['All', 5, 10, 15]
+            const durations = ['All', 5, 10, 15, 20, 25, 30]
             duration = durations.at(1 + durations.indexOf(SSFilters.duration) - durations.length)
             STFilters.duration = duration
         } else if (filter === 'token') {
@@ -65,7 +61,6 @@ export const Controls = ({ core }) => {
         }
 
         let games = SSGames.all.filter(game => topic === 'All' ? game : game.topic.name === topic)
-        games = games.filter(game => players === 'All' ? game : game.players.all === players)
         games = games.filter(game => duration === 'All' ? game : game.duration === duration)
         STGames.filtered = games.filter(game => token === 'All' ? game : game.token === token)
     }
@@ -126,21 +121,6 @@ export const Controls = ({ core }) => {
                                     <div className={sty.filterBody}>
                                         <h4 className={sty.filterTtl}>Topic</h4>
                                         <h5 className={sty.filterSbtl}>{SSFilters.topic}</h5>
-                                    </div>
-                                </motion.div>
-                                <motion.div className={sty.filter}
-                                    variants={filterVt(10, 1)}
-                                    initial='initial'
-                                    animate='animate'
-                                    exit='exit'
-                                    onClick={() => changeFilter('players')}
-                                >
-                                    <div className={sty.filterIc}>
-                                        <Icon name='person' size={22} color='--primary-tint' />
-                                    </div>
-                                    <div className={sty.filterBody}>
-                                        <h4 className={sty.filterTtl}>Players</h4>
-                                        <h5 className={sty.filterSbtl}>{`${SSFilters.players}${SSFilters.players !== 'All' ? ' players' : ''}`}</h5>
                                     </div>
                                 </motion.div>
                                 <motion.div className={sty.filter}

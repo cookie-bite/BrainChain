@@ -1,3 +1,4 @@
+import { useEffect, useState, useRef } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useSnapshot } from 'valtio'
 import { usePostHog } from 'posthog-js/react'
@@ -30,16 +31,35 @@ export const Play = ({ ws, core }) => {
     }
 
 
+    const [countdown, setCountdown] = useState(60)
+    const countdownRef = useRef(null)
+
+    useEffect(() => {
+        if (SSProfile.gameID) {
+            setCountdown(60)
+            countdownRef.current = setInterval(() => {
+                setCountdown(prev => {
+                    if (prev <= 1) {
+                        clearInterval(countdownRef.current)
+                        return 0
+                    }
+                    return prev - 1
+                })
+            }, 1000)
+        } else {
+            clearInterval(countdownRef.current)
+            setCountdown(60)
+        }
+        return () => clearInterval(countdownRef.current)
+    }, [SSProfile.gameID])
+
     const changeFilter = (filter) => {
         if (filter === 'topic') {
             const topics = ['AI', 'Anatomy', 'Astronomy', 'Cinema', 'Economics', 'Game', 'Geography', 'Mathematics', 'Mixed', 'Music', 'Sports', 'Technology']
             let newTopic = topics.at(1 + topics.indexOf(SSIndicator.topic.name) - topics.length)
             STIndicator.topic = { name: newTopic, icon: icons[newTopic] }
-        } else if (filter === 'players') {
-            const playersCount = [2, 3, 4, 6, 8]
-            STIndicator.players.all = playersCount.at(1 + playersCount.indexOf(SSIndicator.players.all) - playersCount.length)
         } else if (filter === 'duration') {
-            const durations = [5, 10, 15]
+            const durations = [5, 10, 15, 20, 25, 30]
             STIndicator.duration = durations.at(1 + durations.indexOf(SSIndicator.duration) - durations.length)
         } else if (filter === 'token') {
             const tokens = [20, 50, 100, 150, 200]
@@ -77,15 +97,6 @@ export const Play = ({ ws, core }) => {
                                 <h5 className={sty.filterSbtl}>{SSIndicator.topic.name}</h5>
                             </div>
                         </div>
-                        <div className={sty.filter} onClick={() => changeFilter('players')}>
-                            <div className={sty.filterIc}>
-                                <Icon name='person' size={22} color='--primary-tint' />
-                            </div>
-                            <div className={sty.filterBody}>
-                                <h4 className={sty.filterTtl}>Players</h4>
-                                <h5 className={sty.filterSbtl}>{`${SSIndicator.players.all} players`}</h5>
-                            </div>
-                        </div>
                         <div className={sty.filter} onClick={() => changeFilter('duration')}>
                             <div className={sty.filterIc}>
                                 <Icon name='reader' size={24} color='--primary-label' />
@@ -121,14 +132,17 @@ export const Play = ({ ws, core }) => {
                             <h2 className={sty.playTopicLbl}>{SSIndicator.topic.name}</h2>
                             <h5 className={sty.playDurationLbl}>{SSIndicator.duration} questions</h5>
                         </div>
+                        {SSProfile.gameID && <div className={sty.playCountdown}>
+                            <h1 className={sty.playCountdownLbl} style={{ color: countdown <= 10 ? 'var(--system-red)' : 'var(--system-yellow)' }}>{countdown}s</h1>
+                            <h5 className={sty.playCountdownSbtl}>Waiting for players...</h5>
+                        </div>}
                         <div className={sty.playPlayers}>
-                            {Array(SSIndicator.players.all).fill().map((player, index) => {
-                                return (
-                                    index < (SSProfile.gameID ? SSIndicator.players.joined : 1)
-                                        ? <Icon name='person' size={34} color='--system-orange' key={index} />
-                                        : <Icon name='person-o' size={34} color='--primary-tint' key={index} />
-                                )
-                            })}
+                            {SSProfile.gameID
+                                ? SSIndicator.players.list.map((player, index) => (
+                                    <Icon name='person' size={34} color={player.os === 'AI' ? '--primary-tint' : '--system-orange'} key={index} />
+                                ))
+                                : <Icon name='person' size={34} color='--system-orange' />
+                            }
                         </div>
                     </div>
                 </div>
