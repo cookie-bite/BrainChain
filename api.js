@@ -387,6 +387,6 @@ module.exports.collection = (c) => DB.collection(c)
 app.get('/api', (req, res) => res.json({ message: 'From api with love' }))
 
 app.use('/', express.static(path.join(`${__dirname}/client/dist`)))
-app.get('*', (req, res) => res.sendFile(path.join(`${__dirname}/client/dist`)))
+app.get('*', (req, res) => res.sendFile(path.join(`${__dirname}/client/dist/index.html`)))
 
 app.use('/auth', require('./routes/auth.routes'))
