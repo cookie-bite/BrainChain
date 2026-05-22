@@ -1,3 +1,5 @@
+const aiQuestions = require('../questions/İronhack/1.1_questions.js');
+
 exports.genRandom = (length = 8, base = 36) => {
     return (Math.round(Math.random() * ((base ** (length - 1) * (base - 1)) - 1)) + (base ** (length - 1))).toString(base)
 }
@@ -74,6 +76,10 @@ exports.genGame = (count = 20) => {
         {
             name: 'Technology',
             icon: 'code-slash'
+        },
+        {
+            name: 'AI',
+            icon: 'hardware-chip'
         }
     ]
 
@@ -103,6 +109,7 @@ exports.genGame = (count = 20) => {
 
 exports.genQuiz = (topic, count) => {
     const quiz = {
+        ai: [...aiQuestions],
         astronomy: [
             {
                 hasContent: false,

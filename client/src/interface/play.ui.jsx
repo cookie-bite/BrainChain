@@ -14,6 +14,7 @@ export const Play = ({ ws, core }) => {
     const posthog = usePostHog()
 
     const icons = {
+        'AI': 'hardware-chip',
         'Anatomy': 'body',
         'Art': 'color-palette',
         'Astronomy': 'planet',
@@ -31,7 +32,7 @@ export const Play = ({ ws, core }) => {
 
     const changeFilter = (filter) => {
         if (filter === 'topic') {
-            const topics = ['Anatomy', 'Astronomy', 'Cinema', 'Economics', 'Game', 'Geography', 'Mathematics', 'Mixed', 'Music', 'Sports', 'Technology']
+            const topics = ['AI', 'Anatomy', 'Astronomy', 'Cinema', 'Economics', 'Game', 'Geography', 'Mathematics', 'Mixed', 'Music', 'Sports', 'Technology']
             let newTopic = topics.at(1 + topics.indexOf(SSIndicator.topic.name) - topics.length)
             STIndicator.topic = { name: newTopic, icon: icons[newTopic] }
         } else if (filter === 'players') {
