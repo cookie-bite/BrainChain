@@ -8,7 +8,7 @@
         "stop": "pm2 delete all",
         "dev": "nodemon api",
         "client": "cd client && npm run dev",
-        "build": "npm i && cd client && npm i && npm run build && cd ..",
+        "build": "npm i --production=false && cd client && npm i --production=false && npm run build && cd ..",
         "build-local": "cd client && npm i && npm run build && cd .. && node api"
     },
     "author": "Sevil Rasulova & Ali Mammadli",
