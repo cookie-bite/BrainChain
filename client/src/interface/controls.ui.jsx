@@ -21,7 +21,7 @@ export const Controls = ({ core }) => {
     const inActiveNavs = useAnimation()
     const activeNavs = useAnimation()
 
-    const navs = ['Play', 'Create', 'Discover', 'Tournaments', 'Community']
+    const navs = ['Play', 'Discover', 'Tournaments', 'Community']
 
 
     const Balance = () => {
@@ -106,55 +106,7 @@ export const Controls = ({ core }) => {
                             })}
                         </div>
 
-                        <AnimatePresence>
-                            {SSUI.value.name === 'Play' && <motion.div className={sty.filters}>
-                                <motion.div className={sty.filter}
-                                    variants={filterVt(15, 0)}
-                                    initial='initial'
-                                    animate='animate'
-                                    exit='exit'
-                                    onClick={() => changeFilter('topic')}
-                                >
-                                    <div className={sty.filterIc}>
-                                        <Icon name='book' size={24} color='--system-yellow' />
-                                    </div>
-                                    <div className={sty.filterBody}>
-                                        <h4 className={sty.filterTtl}>Topic</h4>
-                                        <h5 className={sty.filterSbtl}>{SSFilters.topic}</h5>
-                                    </div>
-                                </motion.div>
-                                <motion.div className={sty.filter}
-                                    variants={filterVt(10, 2)}
-                                    initial='initial'
-                                    animate='animate'
-                                    exit='exit'
-                                    onClick={() => changeFilter('duration')}
-                                >
-                                    <div className={sty.filterIc}>
-                                        <Icon name='reader' size={24} color='--primary-label' />
-                                    </div>
-                                    <div className={sty.filterBody}>
-                                        <h4 className={sty.filterTtl}>Questions</h4>
-                                        <h5 className={sty.filterSbtl}>{`${SSFilters.duration}${SSFilters.duration !== 'All' ? ' questions' : ''}`}</h5>
-                                    </div>
-                                </motion.div>
-                                <motion.div className={sty.filter}
-                                    variants={filterVt(10, 3)}
-                                    initial='initial'
-                                    animate='animate'
-                                    exit='exit'
-                                    onClick={() => changeFilter('token')}
-                                >
-                                    <div className={sty.filterIc}>
-                                        <Icon name='brain-token' size={22} color='--system-pink' />
-                                    </div>
-                                    <div className={sty.filterBody}>
-                                        <h4 className={sty.filterTtl}>Token</h4>
-                                        <h5 className={sty.filterSbtl}>{`${SSFilters.token}${SSFilters.token !== 'All' ? ' token' : ''}`}</h5>
-                                    </div>
-                                </motion.div>
-                            </motion.div>}
-                        </AnimatePresence>
+
                     </div>
 
                     {core.isMobile && <div className={sty.mobNav}>
