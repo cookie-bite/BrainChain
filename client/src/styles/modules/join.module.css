@@ -40,34 +40,30 @@
     height: 270px;
     padding: 18px;
     border-radius: 24px;
+    border: 2px dashed var(--quaternary-label);
     backdrop-filter: saturate(180%) blur(20px);
     -webkit-backdrop-filter: saturate(180%) blur(20px);
     background-color: var(--thin-material);
     cursor: pointer;
-    transition: all .2s ease-in-out;
+    transition: border-color .25s ease, box-shadow .25s ease, background-color .25s ease;
 }
 
-.filterCard:hover {
+/* Green glow ONLY when hovering the card itself, NOT filter buttons */
+.filterCard:hover:not(:has(.ring:hover, .fcDuration:hover)) {
+    border-color: var(--system-green);
+    box-shadow: 0 0 30px rgba(48, 209, 88, 0.15), inset 0 0 30px rgba(48, 209, 88, 0.05);
     background-color: var(--ultrathin-material);
 }
+
+.filterCard:hover:not(:has(.ring:hover, .fcDuration:hover)) .fcCreate {
+    opacity: 1;
+}
+
 
 /* Header: topic ring (left) + token ring (right) */
 .fcHeader {
     justify-content: space-between;
     width: 100%;
-}
-
-.fcTokenCol {
-    flex-direction: column;
-    align-items: center;
-    cursor: pointer;
-}
-
-.fcTokenLbl {
-    font-size: 16px;
-    font-weight: 600;
-    color: var(--secondary-label);
-    margin-top: 2px;
 }
 
 /* Center: topic name + duration bar */
@@ -92,13 +88,14 @@
     flex-direction: column;
     align-items: center;
     cursor: pointer;
-    padding: 4px 12px;
+    padding: 6px 14px;
     border-radius: 12px;
-    transition: background-color .15s;
+    transition: background-color .15s, box-shadow .2s;
 }
 
 .fcDuration:hover {
     background-color: var(--quaternary-fill);
+    box-shadow: 0 0 12px rgba(255, 255, 255, 0.08);
 }
 
 .fcDurationLbl {
@@ -130,12 +127,8 @@
     justify-content: center;
     padding: 4px 16px;
     border-radius: 14px;
-    opacity: 0.5;
-    transition: opacity .2s;
-}
-
-.filterCard:hover .fcCreate {
-    opacity: 1;
+    opacity: 0.4;
+    transition: opacity .25s;
 }
 
 
@@ -146,11 +139,13 @@
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    transition: transform .15s ease;
+    border-radius: 50%;
+    transition: transform .15s ease, filter .25s ease;
 }
 
 .ring:hover {
     transform: scale(1.12);
+    filter: drop-shadow(0 0 10px var(--glow));
 }
 
 .ringSvg {
@@ -165,6 +160,20 @@
     position: relative;
     align-items: center;
     justify-content: center;
+}
+
+.ringStack {
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1px;
+}
+
+.ringValueLbl {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--secondary-label);
+    line-height: 1;
 }
 
 

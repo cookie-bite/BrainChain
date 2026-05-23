@@ -45,21 +45,21 @@ const CountdownTimer = memo(({ createdAt }) => {
 
 /* ── Circular Progress Ring ── */
 
-const Ring = ({ progress, color, size = 60, radius = 24, onClick, children }) => {
+const Ring = ({ progress, color, glow, size = 60, radius = 24, onClick, children }) => {
     const C = 2 * Math.PI * radius
     const isAll = progress === 0
-    const center = size / 2
+    const ctr = size / 2
 
     return (
-        <div className={sty.ring} onClick={onClick} style={{ width: size, height: size }}>
+        <div className={sty.ring} onClick={onClick} style={{ width: size, height: size, '--glow': glow }}>
             <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className={sty.ringSvg}>
-                <circle cx={center} cy={center} r={radius} fill="none"
+                <circle cx={ctr} cy={ctr} r={radius} fill="none"
                     stroke={color} strokeWidth="2.5" opacity="0.15"
                     strokeDasharray={isAll ? '4 4' : undefined} />
-                {!isAll && <circle cx={center} cy={center} r={radius} fill="none"
+                {!isAll && <circle cx={ctr} cy={ctr} r={radius} fill="none"
                     stroke={color} strokeWidth="2.5" strokeLinecap="round"
                     strokeDasharray={C} strokeDashoffset={C * (1 - progress)}
-                    transform={`rotate(-90 ${center} ${center})`}
+                    transform={`rotate(-90 ${ctr} ${ctr})`}
                     className={sty.ringProgress} />}
             </svg>
             <div className={sty.ringContent}>{children}</div>
@@ -82,7 +82,7 @@ const durationList = ['All', 5, 10, 15, 20, 25, 30]
 const tokenList = ['All', 20, 50, 100, 150, 200]
 
 const cycle = (arr, current) => arr.at(1 + arr.indexOf(current) - arr.length)
-const progress = (arr, current) => { const i = arr.indexOf(current); return i === 0 ? 0 : i / (arr.length - 1) }
+const prog = (arr, current) => { const i = arr.indexOf(current); return i === 0 ? 0 : i / (arr.length - 1) }
 
 
 /* ── Main Component ── */
@@ -97,7 +97,6 @@ export const Join = ({ ws, core }) => {
     const [durationF, setDurationF] = useState('All')
     const [tokenF, setTokenF] = useState('All')
 
-    // Filter lobby games
     useEffect(() => {
         let f = SSGames.all
         if (topicF !== 'All') f = f.filter(g => g.topic.name === topicF)
@@ -128,17 +127,13 @@ export const Join = ({ ws, core }) => {
         ws.send(JSON.stringify({ command: 'LEAVE_GAME', id: SSProfile.gameID, name: SSProfile.name }))
     }
 
-    // Progress values
-    const tP = progress(topicList, topicF)
-    const dP = progress(durationList, durationF)
-    const kP = progress(tokenList, tokenF)
+    const tP = prog(topicList, topicF)
+    const dP = prog(durationList, durationF)
+    const kP = prog(tokenList, tokenF)
 
-    // Display values
     const topicIcon = topicF === 'All' ? 'earth' : icons[topicF]
     const topicName = topicF === 'All' ? 'All Topics' : topicF
     const durationLbl = durationF === 'All' ? 'All questions' : `${durationF} questions`
-    const tokenLbl = tokenF === 'All' ? '∞' : tokenF
-
     const isMob = core.isMobile
 
 
@@ -146,7 +141,6 @@ export const Join = ({ ws, core }) => {
         <div className={sty.join}>
             <AnimatePresence mode='wait'>
                 {SSProfile.gameID ? (
-                    /* ── Waiting Screen ── */
                     <motion.div className={sty.waitingArea} key='waiting'
                         style={{ transform: `scale(${isMob ? 0.65 : 1})` }}
                         initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}
@@ -181,7 +175,6 @@ export const Join = ({ ws, core }) => {
                         </div>
                     </motion.div>
                 ) : (
-                    /* ── Lobby View ── */
                     <motion.div className={sty.lobbyArea} key='lobby'
                         initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
                         transition={{ duration: 0.3 }}
@@ -190,16 +183,17 @@ export const Join = ({ ws, core }) => {
                         <div className={sty.filterCardWrap} style={{ transform: `scale(${isMob ? 0.7 : 1})` }}>
                             <div className={sty.filterCard} onClick={createGame}>
                                 <div className={sty.fcHeader}>
-                                    <Ring progress={tP} color='var(--system-yellow)'
+                                    <Ring progress={tP} color='var(--system-yellow)' glow='rgba(255,214,10,0.5)'
                                         onClick={e => { e.stopPropagation(); setTopicF(prev => cycle(topicList, prev)) }}>
                                         <Icon name={topicIcon} size={28} color='--system-yellow' />
                                     </Ring>
-                                    <div className={sty.fcTokenCol} onClick={e => { e.stopPropagation(); setTokenF(prev => cycle(tokenList, prev)) }}>
-                                        <Ring progress={kP} color='var(--system-pink)'>
-                                            <Icon name='brain-token' size={24} color='--system-pink' />
-                                        </Ring>
-                                        <h5 className={sty.fcTokenLbl}>{tokenLbl}</h5>
-                                    </div>
+                                    <Ring progress={kP} color='var(--system-pink)' glow='rgba(255,55,95,0.5)'
+                                        onClick={e => { e.stopPropagation(); setTokenF(prev => cycle(tokenList, prev)) }}>
+                                        <div className={sty.ringStack}>
+                                            <Icon name='brain-token' size={tokenF !== 'All' ? 18 : 24} color='--system-pink' />
+                                            {tokenF !== 'All' && <h5 className={sty.ringValueLbl}>{tokenF}</h5>}
+                                        </div>
+                                    </Ring>
                                 </div>
 
                                 <div className={sty.fcCenter}>
