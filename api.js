@@ -291,6 +291,7 @@ wss.on('connection', (ws) => {
             // Auto-start after 60 seconds
             gameTimers[gameID] = setTimeout(() => startGameWithBots(gameID), 60000)
         } else if (req.command === 'SEND_ANSR') {
+            if (!liveGames[req.id]) return
             if (req.answer) {
                 liveGames[req.id].answers[userID][req.index] = { answer: req.answer, isTrue: req.answer === liveGames[req.id].quiz[req.index].correct }
                 sendRoom(req.id, { command: 'UPDT_ANSR', answers: liveGames[req.id].answers })
