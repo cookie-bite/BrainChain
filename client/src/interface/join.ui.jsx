@@ -8,6 +8,8 @@ import { Icon, Matrix } from '../components/core.cmp'
 import sty from '../styles/modules/join.module.css'
 
 
+/* ── Countdown Timer ── */
+
 const CountdownTimer = memo(({ createdAt }) => {
     const [countdown, setCountdown] = useState(() => {
         if (!createdAt) return 60
@@ -19,7 +21,6 @@ const CountdownTimer = memo(({ createdAt }) => {
         if (!createdAt) return
         const remaining = Math.max(0, 60 - Math.floor((Date.now() - createdAt) / 1000))
         setCountdown(remaining)
-
         if (remaining <= 0) return
 
         countdownRef.current = setInterval(() => {
@@ -42,72 +43,78 @@ const CountdownTimer = memo(({ createdAt }) => {
 })
 
 
-const icons = {
-    'AI': 'hardware-chip',
-    'Anatomy': 'body',
-    'Art': 'color-palette',
-    'Astronomy': 'planet',
-    'Cinema': 'film',
-    'Economics': 'bar-chart',
-    'Game': 'game-controller',
-    'Geography': 'compass',
-    'Mathematics': 'calculator',
-    'Mixed': 'earth',
-    'Music': 'musical-notes',
-    'Sports': 'basketball',
-    'Technology': 'code-slash'
+/* ── Circular Progress Ring ── */
+
+const Ring = ({ progress, color, size = 60, radius = 24, onClick, children }) => {
+    const C = 2 * Math.PI * radius
+    const isAll = progress === 0
+    const center = size / 2
+
+    return (
+        <div className={sty.ring} onClick={onClick} style={{ width: size, height: size }}>
+            <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className={sty.ringSvg}>
+                <circle cx={center} cy={center} r={radius} fill="none"
+                    stroke={color} strokeWidth="2.5" opacity="0.15"
+                    strokeDasharray={isAll ? '4 4' : undefined} />
+                {!isAll && <circle cx={center} cy={center} r={radius} fill="none"
+                    stroke={color} strokeWidth="2.5" strokeLinecap="round"
+                    strokeDasharray={C} strokeDashoffset={C * (1 - progress)}
+                    transform={`rotate(-90 ${center} ${center})`}
+                    className={sty.ringProgress} />}
+            </svg>
+            <div className={sty.ringContent}>{children}</div>
+        </div>
+    )
 }
 
-const topics = ['All', 'AI', 'Anatomy', 'Astronomy', 'Cinema', 'Economics', 'Game', 'Geography', 'Mathematics', 'Mixed', 'Music', 'Sports', 'Technology']
-const durations = ['All', 5, 10, 15, 20, 25, 30]
-const tokens = ['All', 20, 50, 100, 150, 200]
 
+/* ── Constants ── */
+
+const icons = {
+    'AI': 'hardware-chip', 'Anatomy': 'body', 'Art': 'color-palette',
+    'Astronomy': 'planet', 'Cinema': 'film', 'Economics': 'bar-chart',
+    'Game': 'game-controller', 'Geography': 'compass', 'Mathematics': 'calculator',
+    'Mixed': 'earth', 'Music': 'musical-notes', 'Sports': 'basketball', 'Technology': 'code-slash'
+}
+
+const topicList = ['All', 'AI', 'Anatomy', 'Astronomy', 'Cinema', 'Economics', 'Game', 'Geography', 'Mathematics', 'Mixed', 'Music', 'Sports', 'Technology']
+const durationList = ['All', 5, 10, 15, 20, 25, 30]
+const tokenList = ['All', 20, 50, 100, 150, 200]
+
+const cycle = (arr, current) => arr.at(1 + arr.indexOf(current) - arr.length)
+const progress = (arr, current) => { const i = arr.indexOf(current); return i === 0 ? 0 : i / (arr.length - 1) }
+
+
+/* ── Main Component ── */
 
 export const Join = ({ ws, core }) => {
     const SSProfile = useSnapshot(STProfile)
     const SSGames = useSnapshot(STGames)
     const SSIndicator = useSnapshot(STIndicator)
-
     const posthog = usePostHog()
 
-    const [topicFilter, setTopicFilter] = useState('All')
-    const [durationFilter, setDurationFilter] = useState('All')
-    const [tokenFilter, setTokenFilter] = useState('All')
+    const [topicF, setTopicF] = useState('All')
+    const [durationF, setDurationF] = useState('All')
+    const [tokenF, setTokenF] = useState('All')
 
-
-    const changeFilter = (filter) => {
-        if (filter === 'topic') {
-            setTopicFilter(prev => topics.at(1 + topics.indexOf(prev) - topics.length))
-        } else if (filter === 'duration') {
-            setDurationFilter(prev => durations.at(1 + durations.indexOf(prev) - durations.length))
-        } else if (filter === 'token') {
-            setTokenFilter(prev => tokens.at(1 + tokens.indexOf(prev) - tokens.length))
-        }
-    }
-
-
-    // Filter games based on active filters
+    // Filter lobby games
     useEffect(() => {
-        let filtered = SSGames.all
-        if (topicFilter !== 'All') filtered = filtered.filter(g => g.topic.name === topicFilter)
-        if (durationFilter !== 'All') filtered = filtered.filter(g => g.duration === durationFilter)
-        if (tokenFilter !== 'All') filtered = filtered.filter(g => g.token === tokenFilter)
-        STGames.filtered = filtered
-    }, [topicFilter, durationFilter, tokenFilter, SSGames.all])
+        let f = SSGames.all
+        if (topicF !== 'All') f = f.filter(g => g.topic.name === topicF)
+        if (durationF !== 'All') f = f.filter(g => g.duration === durationF)
+        if (tokenF !== 'All') f = f.filter(g => g.token === tokenF)
+        STGames.filtered = f
+    }, [topicF, durationF, tokenF, SSGames.all])
 
-
-    const getCreateParams = () => {
-        const topic = topicFilter !== 'All' ? topicFilter : 'Mixed'
-        const duration = durationFilter !== 'All' ? durationFilter : 5
-        const token = tokenFilter !== 'All' ? tokenFilter : 20
-        return { topic: { name: topic, icon: icons[topic] }, duration, token }
-    }
-
+    const getParams = () => ({
+        topic: { name: topicF !== 'All' ? topicF : 'Mixed', icon: icons[topicF !== 'All' ? topicF : 'Mixed'] },
+        duration: durationF !== 'All' ? durationF : 5,
+        token: tokenF !== 'All' ? tokenF : 20
+    })
 
     const createGame = () => {
         posthog.capture('Created Game')
-        const params = getCreateParams()
-        ws.send(JSON.stringify({ command: 'CREATE_GAME', game: params, user: { name: STProfile.name, color: STProfile.color } }))
+        ws.send(JSON.stringify({ command: 'CREATE_GAME', game: getParams(), user: { name: STProfile.name, color: STProfile.color } }))
     }
 
     const actGame = (game) => {
@@ -121,53 +128,29 @@ export const Join = ({ ws, core }) => {
         ws.send(JSON.stringify({ command: 'LEAVE_GAME', id: SSProfile.gameID, name: SSProfile.name }))
     }
 
+    // Progress values
+    const tP = progress(topicList, topicF)
+    const dP = progress(durationList, durationF)
+    const kP = progress(tokenList, tokenF)
 
-    const hasActiveFilter = topicFilter !== 'All' || durationFilter !== 'All' || tokenFilter !== 'All'
-    const phantomParams = getCreateParams()
+    // Display values
+    const topicIcon = topicF === 'All' ? 'earth' : icons[topicF]
+    const topicName = topicF === 'All' ? 'All Topics' : topicF
+    const durationLbl = durationF === 'All' ? 'All questions' : `${durationF} questions`
+    const tokenLbl = tokenF === 'All' ? '∞' : tokenF
+
+    const isMob = core.isMobile
 
 
     return (
         <div className={sty.join}>
-            <AnimatePresence>
-                {!SSProfile.gameID && <motion.div className={sty.filterBar}
-                    style={{ transform: `scale(${core.isMobile ? 0.75 : 1})` }}
-                    initial={{ opacity: 0, y: -20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -20 }}
-                    transition={{ ease: 'easeInOut', duration: 0.3 }}
-                >
-                    <div className={sty.filterPill} onClick={() => changeFilter('topic')}>
-                        <div className={sty.filterPillIc}>
-                            <Icon name={topicFilter === 'All' ? 'earth' : icons[topicFilter]} size={18} color='--system-yellow' />
-                        </div>
-                    </div>
-                    <div className={sty.filterPill} onClick={() => changeFilter('duration')}>
-                        <div className={sty.filterPillIc}>
-                            <Icon name='reader' size={18} color='--primary-label' />
-                        </div>
-                        <h5 className={sty.filterPillLbl}>{durationFilter === 'All' ? '∞' : durationFilter}</h5>
-                    </div>
-                    <div className={sty.filterPill} onClick={() => changeFilter('token')}>
-                        <div className={sty.filterPillIc}>
-                            <Icon name='brain-token' size={16} color='--system-pink' />
-                        </div>
-                        <h5 className={sty.filterPillLbl}>{tokenFilter === 'All' ? '∞' : tokenFilter}</h5>
-                    </div>
-                    <button className={sty.createBtn} onClick={() => createGame()}>
-                        <Icon name='add-circle' size={20} color='--system-green' />
-                        <h5 className={sty.createBtnLbl}>Create</h5>
-                    </button>
-                </motion.div>}
-            </AnimatePresence>
-
-            <AnimatePresence>
-                {SSProfile.gameID
-                    ? <motion.div className={sty.waitingArea}
-                        style={{ transform: `scale(${core.isMobile ? 0.65 : 1})` }}
-                        initial={{ opacity: 0, scale: 0.9 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        exit={{ opacity: 0, scale: 0.9 }}
-                        transition={{ ease: 'easeInOut', duration: 0.3 }}
+            <AnimatePresence mode='wait'>
+                {SSProfile.gameID ? (
+                    /* ── Waiting Screen ── */
+                    <motion.div className={sty.waitingArea} key='waiting'
+                        style={{ transform: `scale(${isMob ? 0.65 : 1})` }}
+                        initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.9 }} transition={{ duration: 0.3 }}
                     >
                         <div className={sty.waitingWrapper}>
                             <Matrix size={15} gap={3} />
@@ -197,28 +180,54 @@ export const Join = ({ ws, core }) => {
                             </button>
                         </div>
                     </motion.div>
-
-                    : <motion.div className={sty.games}
-                        style={{ width: core.isMobile ? '100%' : '80%', gap: core.isMobile ? 25 : 20 }}
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        transition={{ ease: 'easeInOut', duration: 0.3 }}
+                ) : (
+                    /* ── Lobby View ── */
+                    <motion.div className={sty.lobbyArea} key='lobby'
+                        initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                        transition={{ duration: 0.3 }}
                     >
-                        {SSGames.filtered.map((game) => {
-                            return (
+                        {/* ── Filter Card ── */}
+                        <div className={sty.filterCardWrap} style={{ transform: `scale(${isMob ? 0.7 : 1})` }}>
+                            <div className={sty.filterCard} onClick={createGame}>
+                                <div className={sty.fcHeader}>
+                                    <Ring progress={tP} color='var(--system-yellow)'
+                                        onClick={e => { e.stopPropagation(); setTopicF(prev => cycle(topicList, prev)) }}>
+                                        <Icon name={topicIcon} size={28} color='--system-yellow' />
+                                    </Ring>
+                                    <div className={sty.fcTokenCol} onClick={e => { e.stopPropagation(); setTokenF(prev => cycle(tokenList, prev)) }}>
+                                        <Ring progress={kP} color='var(--system-pink)'>
+                                            <Icon name='brain-token' size={24} color='--system-pink' />
+                                        </Ring>
+                                        <h5 className={sty.fcTokenLbl}>{tokenLbl}</h5>
+                                    </div>
+                                </div>
+
+                                <div className={sty.fcCenter}>
+                                    <h2 className={sty.fcTopicLbl}>{topicName}</h2>
+                                    <div className={sty.fcDuration} onClick={e => { e.stopPropagation(); setDurationF(prev => cycle(durationList, prev)) }}>
+                                        <h5 className={sty.fcDurationLbl}>{durationLbl}</h5>
+                                        <div className={sty.linearTrack}>
+                                            <div className={sty.linearFill} style={{ width: `${dP * 100}%` }} />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className={sty.fcCreate}>
+                                    <Icon name='person-o' size={26} color='--primary-tint' />
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* ── Game Cards ── */}
+                        <div className={sty.games} style={{ width: isMob ? '100%' : '80%', gap: isMob ? 25 : 20 }}>
+                            {SSGames.filtered.map((game) => (
                                 <motion.div className={sty.gameWrapper} key={game.id}
-                                    style={{ width: core.isMobile ? 'calc(50vw - 40px)' : 198, height: core.isMobile ? 'calc(50vw - 40px)' : 198 }}
+                                    style={{ width: isMob ? 'calc(50vw - 40px)' : 198, height: isMob ? 'calc(50vw - 40px)' : 198 }}
                                     initial={{ backdropFilter: 'inherit', WebkitBackdropFilter: 'inherit' }}
                                     animate={{ backdropFilter: 'saturate(180%) blur(20px)', WebkitBackdropFilter: 'saturate(180%) blur(20px)' }}
                                     transition={{ duration: 0.3, delay: 0.6 }}
                                 >
-                                    {SSProfile.gameID === game.id && (
-                                        core.isMobile
-                                            ? <Matrix size={9} gap={2} />
-                                            : <Matrix size={10} gap={2} />
-                                    )}
-                                    <div className={sty.gameCard} onClick={() => actGame(game)} style={{ width: core.isMobile ? '100%' : 198, height: core.isMobile ? '100%' : 198 }}>
+                                    <div className={sty.gameCard} onClick={() => actGame(game)} style={{ width: isMob ? '100%' : 198, height: isMob ? '100%' : 198 }}>
                                         <div className={sty.gameHeader}>
                                             <Icon name={game.topic.icon} size={34} color='--system-yellow' />
                                             <div className={sty.gameToken}>
@@ -231,43 +240,16 @@ export const Join = ({ ws, core }) => {
                                             <h5 className={sty.gameDurationLbl}>{game.duration} questions</h5>
                                         </div>
                                         <div className={sty.gamePlayers}>
-                                            {game.players.list.map((player, index) => {
-                                                return <Icon name='person' size={20} color={player.os === 'AI' ? '--primary-tint' : '--system-orange'} key={index} />
-                                            })}
+                                            {game.players.list.map((player, index) => (
+                                                <Icon name='person' size={20} color={player.os === 'AI' ? '--primary-tint' : '--system-orange'} key={index} />
+                                            ))}
                                         </div>
                                     </div>
                                 </motion.div>
-                            )
-                        })}
-
-                        {/* Phantom card — when no games match active filters */}
-                        {SSGames.filtered.length === 0 && hasActiveFilter && (
-                            <motion.div className={sty.gameWrapper}
-                                style={{ width: core.isMobile ? 'calc(50vw - 40px)' : 198, height: core.isMobile ? 'calc(50vw - 40px)' : 198 }}
-                                initial={{ opacity: 0, scale: 0.9 }}
-                                animate={{ opacity: 1, scale: 1, backdropFilter: 'saturate(180%) blur(20px)', WebkitBackdropFilter: 'saturate(180%) blur(20px)' }}
-                                transition={{ duration: 0.3 }}
-                            >
-                                <div className={`${sty.gameCard} ${sty.phantomCard}`} onClick={() => createGame()} style={{ width: core.isMobile ? '100%' : 198, height: core.isMobile ? '100%' : 198 }}>
-                                    <div className={sty.gameHeader}>
-                                        <Icon name={icons[phantomParams.topic.name]} size={34} color='--system-yellow' />
-                                        <div className={sty.gameToken}>
-                                            <h5 className={sty.gameTokenLbl}>{phantomParams.token}</h5>
-                                            <Icon name='brain-token' size={32} color='--system-pink' />
-                                        </div>
-                                    </div>
-                                    <div className={sty.gameTopic}>
-                                        <h2 className={sty.gameTopicLbl}>{phantomParams.topic.name}</h2>
-                                        <h5 className={sty.gameDurationLbl}>{phantomParams.duration} questions</h5>
-                                    </div>
-                                    <div className={sty.gamePlayers}>
-                                        <Icon name='person-o' size={20} color='--primary-tint' />
-                                    </div>
-                                </div>
-                            </motion.div>
-                        )}
+                            ))}
+                        </div>
                     </motion.div>
-                }
+                )}
             </AnimatePresence>
         </div>
     )
