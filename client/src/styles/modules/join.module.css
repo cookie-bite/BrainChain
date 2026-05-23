@@ -124,6 +124,18 @@
     transition: all .2s ease-in-out;
 }
 
+.phantomCard {
+    border: 2px dashed var(--secondary-label);
+    opacity: 0.6;
+    background-color: transparent;
+}
+
+.phantomCard:hover {
+    opacity: 1;
+    background-color: var(--ultrathin-material);
+    border-color: var(--system-green);
+}
+
 .gameHeader {
     justify-content: space-between;
     width: 100%;

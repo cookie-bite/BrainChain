@@ -58,6 +58,10 @@ const icons = {
     'Technology': 'code-slash'
 }
 
+const topics = ['All', 'AI', 'Anatomy', 'Astronomy', 'Cinema', 'Economics', 'Game', 'Geography', 'Mathematics', 'Mixed', 'Music', 'Sports', 'Technology']
+const durations = ['All', 5, 10, 15, 20, 25, 30]
+const tokens = ['All', 20, 50, 100, 150, 200]
+
 
 export const Join = ({ ws, core }) => {
     const SSProfile = useSnapshot(STProfile)
@@ -66,36 +70,44 @@ export const Join = ({ ws, core }) => {
 
     const posthog = usePostHog()
 
+    const [topicFilter, setTopicFilter] = useState('All')
+    const [durationFilter, setDurationFilter] = useState('All')
+    const [tokenFilter, setTokenFilter] = useState('All')
+
 
     const changeFilter = (filter) => {
         if (filter === 'topic') {
-            const topics = ['AI', 'Anatomy', 'Astronomy', 'Cinema', 'Economics', 'Game', 'Geography', 'Mathematics', 'Mixed', 'Music', 'Sports', 'Technology']
-            let newTopic = topics.at(1 + topics.indexOf(SSIndicator.topic.name) - topics.length)
-            STIndicator.topic = { name: newTopic, icon: icons[newTopic] }
+            setTopicFilter(prev => topics.at(1 + topics.indexOf(prev) - topics.length))
         } else if (filter === 'duration') {
-            const durations = [5, 10, 15, 20, 25, 30]
-            STIndicator.duration = durations.at(1 + durations.indexOf(SSIndicator.duration) - durations.length)
+            setDurationFilter(prev => durations.at(1 + durations.indexOf(prev) - durations.length))
         } else if (filter === 'token') {
-            const tokens = [20, 50, 100, 150, 200]
-            STIndicator.token = tokens.at(1 + tokens.indexOf(SSIndicator.token) - tokens.length)
+            setTokenFilter(prev => tokens.at(1 + tokens.indexOf(prev) - tokens.length))
         }
     }
 
 
-    // Filter games based on current indicator values
+    // Filter games based on active filters
     useEffect(() => {
-        const { topic, duration, token } = SSIndicator
         let filtered = SSGames.all
-        filtered = filtered.filter(g => g.topic.name === topic.name)
-        filtered = filtered.filter(g => g.duration === duration)
-        filtered = filtered.filter(g => g.token === token)
+        if (topicFilter !== 'All') filtered = filtered.filter(g => g.topic.name === topicFilter)
+        if (durationFilter !== 'All') filtered = filtered.filter(g => g.duration === durationFilter)
+        if (tokenFilter !== 'All') filtered = filtered.filter(g => g.token === tokenFilter)
         STGames.filtered = filtered
-    }, [SSIndicator.topic.name, SSIndicator.duration, SSIndicator.token, SSGames.all])
+    }, [topicFilter, durationFilter, tokenFilter, SSGames.all])
+
+
+    const getCreateParams = () => {
+        const topic = topicFilter !== 'All' ? topicFilter : 'Mixed'
+        const duration = durationFilter !== 'All' ? durationFilter : 5
+        const token = tokenFilter !== 'All' ? tokenFilter : 20
+        return { topic: { name: topic, icon: icons[topic] }, duration, token }
+    }
 
 
     const createGame = () => {
         posthog.capture('Created Game')
-        ws.send(JSON.stringify({ command: 'CREATE_GAME', game: { ...SSIndicator }, user: { name: STProfile.name, color: STProfile.color } }))
+        const params = getCreateParams()
+        ws.send(JSON.stringify({ command: 'CREATE_GAME', game: params, user: { name: STProfile.name, color: STProfile.color } }))
     }
 
     const actGame = (game) => {
@@ -110,6 +122,10 @@ export const Join = ({ ws, core }) => {
     }
 
 
+    const hasActiveFilter = topicFilter !== 'All' || durationFilter !== 'All' || tokenFilter !== 'All'
+    const phantomParams = getCreateParams()
+
+
     return (
         <div className={sty.join}>
             <AnimatePresence>
@@ -122,21 +138,20 @@ export const Join = ({ ws, core }) => {
                 >
                     <div className={sty.filterPill} onClick={() => changeFilter('topic')}>
                         <div className={sty.filterPillIc}>
-                            <Icon name='book' size={18} color='--system-yellow' />
+                            <Icon name={topicFilter === 'All' ? 'earth' : icons[topicFilter]} size={18} color='--system-yellow' />
                         </div>
-                        <h5 className={sty.filterPillLbl}>{SSIndicator.topic.name}</h5>
                     </div>
                     <div className={sty.filterPill} onClick={() => changeFilter('duration')}>
                         <div className={sty.filterPillIc}>
                             <Icon name='reader' size={18} color='--primary-label' />
                         </div>
-                        <h5 className={sty.filterPillLbl}>{SSIndicator.duration}</h5>
+                        <h5 className={sty.filterPillLbl}>{durationFilter === 'All' ? '∞' : durationFilter}</h5>
                     </div>
                     <div className={sty.filterPill} onClick={() => changeFilter('token')}>
                         <div className={sty.filterPillIc}>
                             <Icon name='brain-token' size={16} color='--system-pink' />
                         </div>
-                        <h5 className={sty.filterPillLbl}>{SSIndicator.token}</h5>
+                        <h5 className={sty.filterPillLbl}>{tokenFilter === 'All' ? '∞' : tokenFilter}</h5>
                     </div>
                     <button className={sty.createBtn} onClick={() => createGame()}>
                         <Icon name='add-circle' size={20} color='--system-green' />
@@ -224,6 +239,33 @@ export const Join = ({ ws, core }) => {
                                 </motion.div>
                             )
                         })}
+
+                        {/* Phantom card — when no games match active filters */}
+                        {SSGames.filtered.length === 0 && hasActiveFilter && (
+                            <motion.div className={sty.gameWrapper}
+                                style={{ width: core.isMobile ? 'calc(50vw - 40px)' : 198, height: core.isMobile ? 'calc(50vw - 40px)' : 198 }}
+                                initial={{ opacity: 0, scale: 0.9 }}
+                                animate={{ opacity: 1, scale: 1, backdropFilter: 'saturate(180%) blur(20px)', WebkitBackdropFilter: 'saturate(180%) blur(20px)' }}
+                                transition={{ duration: 0.3 }}
+                            >
+                                <div className={`${sty.gameCard} ${sty.phantomCard}`} onClick={() => createGame()} style={{ width: core.isMobile ? '100%' : 198, height: core.isMobile ? '100%' : 198 }}>
+                                    <div className={sty.gameHeader}>
+                                        <Icon name={icons[phantomParams.topic.name]} size={34} color='--system-yellow' />
+                                        <div className={sty.gameToken}>
+                                            <h5 className={sty.gameTokenLbl}>{phantomParams.token}</h5>
+                                            <Icon name='brain-token' size={32} color='--system-pink' />
+                                        </div>
+                                    </div>
+                                    <div className={sty.gameTopic}>
+                                        <h2 className={sty.gameTopicLbl}>{phantomParams.topic.name}</h2>
+                                        <h5 className={sty.gameDurationLbl}>{phantomParams.duration} questions</h5>
+                                    </div>
+                                    <div className={sty.gamePlayers}>
+                                        <Icon name='person-o' size={20} color='--primary-tint' />
+                                    </div>
+                                </div>
+                            </motion.div>
+                        )}
                     </motion.div>
                 }
             </AnimatePresence>
