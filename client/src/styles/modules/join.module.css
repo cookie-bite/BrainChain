@@ -74,6 +74,7 @@
     justify-content: center;
     height: calc(100% - 36px);
     gap: 4px;
+    pointer-events: none;
 }
 
 .fcTopicLbl {
@@ -91,6 +92,7 @@
     padding: 6px 14px;
     border-radius: 12px;
     transition: background-color .15s, box-shadow .2s;
+    pointer-events: auto;
 }
 
 .fcDuration:hover {
