@@ -16,7 +16,7 @@ export const STSettings = proxy({ ui: '' })
 
 export const STFilters = proxy({ topic: 'All', players: 'All', duration: 'All', token: 'All' })
 
-export const STIndicator = proxy({ id: '', topic: { name: 'Anatomy', icon: 'body' }, duration: 5, token: 20, players: { all: 2, joined: 0, list: [] }, answers: {} })
+export const STIndicator = proxy({ id: '', topic: { name: 'Anatomy', icon: 'body' }, duration: 5, token: 20, createdAt: 0, players: { all: 2, joined: 0, list: [] }, answers: {} })
 
 export const STGame = proxy(({ quiz: [], answers: [], questIndex: 0, ui: 'Countdown', stats: [], winner: {} }))
 

@@ -237,25 +237,23 @@ wss.on('connection', (ws) => {
             games[req.id].players.joined++
             games[req.id].answers[userID] = Array(games[req.id].duration).fill({ answer: '', isTrue: null })
 
-            ws.send(JSON.stringify({ command: 'JOIN_GAME', game: games[req.id] }))
-            sendRoom(req.id, { command: 'UPDT_GAME', game: games[req.id] })
-
-            if (games[req.id].players.joined === games[req.id].players.all) {
-                liveGames[req.id] = games[req.id]
-                liveGames[req.id].quiz = genQuiz(liveGames[req.id].topic.name, liveGames[req.id].duration)
-                delete games[req.id]
-
-                Object.keys(rooms[req.id]).forEach((id) => {
-                    lobby[id].balance -= liveGames[req.id].token
-                    sendUser(id, { command: 'UPDT_BLNC', balance: lobby[id].balance })
-                })
-
-                sendRoom(req.id, { command: 'START_GAME', quiz: liveGames[req.id].quiz })
+            // If this is a pre-generated game and first real player joined, start auto-start timer
+            if (!gameTimers[req.id] && !games[req.id].createdAt) {
+                games[req.id].createdAt = Date.now()
+                gameTimers[req.id] = setTimeout(() => startGameWithBots(req.id), 60000)
             }
 
+            ws.send(JSON.stringify({ command: 'JOIN_GAME', game: games[req.id] }))
+            sendRoom(req.id, { command: 'UPDT_GAME', game: games[req.id] })
             sendLobby({ command: 'UPDT_GAMES', games: getArray(games) })
         } else if (req.command === 'LEAVE_GAME') {
+            if (!games[req.id]) return
             if (games[req.id].players.joined === 1) {
+                // Clear auto-start timer when last player leaves
+                if (gameTimers[req.id]) {
+                    clearTimeout(gameTimers[req.id])
+                    delete gameTimers[req.id]
+                }
                 delete rooms[req.id]
                 delete games[req.id]
             } else {
@@ -266,17 +264,21 @@ wss.on('connection', (ws) => {
 
             lobby[userID].gameID = ''
 
-            ws.send(JSON.stringify({ command: 'LEAVE_GAME', game: games[req.id] }))
-            sendRoom(req.id, { command: 'UPDT_GAME', game: games[req.id] })
+            ws.send(JSON.stringify({ command: 'LEAVE_GAME' }))
+            if (games[req.id]) {
+                sendRoom(req.id, { command: 'UPDT_GAME', game: games[req.id] })
+            }
             sendLobby({ command: 'UPDT_GAMES', games: getArray(games) })
         } else if (req.command === 'CREATE_GAME') {
             const gameID = genRandom(8, 10)
+            const createdAt = Date.now()
 
             games[gameID] = {
                 id: gameID,
                 topic: req.game.topic,
                 duration: req.game.duration,
                 token: req.game.token,
+                createdAt,
                 players: { all: 0, joined: 1, list: [{ id: userID, name: req.user.name, color: req.user.color, os: lobby[userID].os, isFinished: false }] },
                 answers: { [userID]: Array(req.game.duration).fill({ answer: '', isTrue: null }) }
             }

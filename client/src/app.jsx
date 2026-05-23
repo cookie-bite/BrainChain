@@ -36,7 +36,7 @@ const connectWS = () => {
             STScene.name = 'Lobby'
             STProfile.gameID = ''
             STUI.value.showIndicator = false
-            Object.assign(STIndicator, { id: '', topic: { name: 'Anatomy', icon: 'body' }, duration: 5, token: 20, players: { all: 2, joined: 0, list: [] } })
+            Object.assign(STIndicator, { id: '', topic: { name: 'Anatomy', icon: 'body' }, duration: 5, token: 20, createdAt: 0, players: { all: 2, joined: 0, list: [] } })
         } else if (res.command === 'UPDT_GAME') {
             Object.assign(STIndicator, res.game)
         } else if (res.command === 'START_GAME') {

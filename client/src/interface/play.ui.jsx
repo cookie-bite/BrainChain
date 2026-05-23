@@ -8,30 +8,31 @@ import { Icon, Matrix } from '../components/core.cmp'
 import sty from '../styles/modules/play.module.css'
 
 
-const CountdownTimer = memo(({ isActive }) => {
-    const [countdown, setCountdown] = useState(60)
+const CountdownTimer = memo(({ createdAt }) => {
+    const [countdown, setCountdown] = useState(() => {
+        if (!createdAt) return 60
+        return Math.max(0, 60 - Math.floor((Date.now() - createdAt) / 1000))
+    })
     const countdownRef = useRef(null)
 
     useEffect(() => {
-        if (isActive) {
-            setCountdown(60)
-            countdownRef.current = setInterval(() => {
-                setCountdown(prev => {
-                    if (prev <= 1) {
-                        clearInterval(countdownRef.current)
-                        return 0
-                    }
-                    return prev - 1
-                })
-            }, 1000)
-        } else {
-            clearInterval(countdownRef.current)
-            setCountdown(60)
-        }
-        return () => clearInterval(countdownRef.current)
-    }, [isActive])
+        if (!createdAt) return
+        // Calculate remaining time from server timestamp
+        const remaining = Math.max(0, 60 - Math.floor((Date.now() - createdAt) / 1000))
+        setCountdown(remaining)
 
-    if (!isActive) return null
+        if (remaining <= 0) return
+
+        countdownRef.current = setInterval(() => {
+            const left = Math.max(0, 60 - Math.floor((Date.now() - createdAt) / 1000))
+            setCountdown(left)
+            if (left <= 0) clearInterval(countdownRef.current)
+        }, 1000)
+
+        return () => clearInterval(countdownRef.current)
+    }, [createdAt])
+
+    if (!createdAt || countdown <= 0) return null
 
     return (
         <div className={sty.playCountdown}>
@@ -144,7 +145,7 @@ export const Play = ({ ws, core }) => {
                             <h2 className={sty.playTopicLbl}>{SSIndicator.topic.name}</h2>
                             <h5 className={sty.playDurationLbl}>{SSIndicator.duration} questions</h5>
                         </div>
-                        <CountdownTimer isActive={!!SSProfile.gameID} />
+                        <CountdownTimer createdAt={SSIndicator.createdAt} />
                         <div className={sty.playPlayers}>
                             {SSProfile.gameID
                                 ? SSIndicator.players.list.map((player, index) => (
