@@ -45,7 +45,7 @@ const CountdownTimer = memo(({ createdAt }) => {
 
 /* ── Circular Progress Ring ── */
 
-const Ring = ({ progress, color, glow, size = 60, radius = 24, onClick, children }) => {
+const Ring = ({ progress, color, glow, size = 66, radius = 27, onClick, children }) => {
     const C = 2 * Math.PI * radius
     const isAll = progress === 0
     const ctr = size / 2
