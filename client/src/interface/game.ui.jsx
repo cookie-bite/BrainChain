@@ -206,10 +206,10 @@ const Quiz = ({ ws, core }) => {
                             const isCodeChoice = choice.startsWith('%') || choice.startsWith('!') || choice.includes('(') || choice.includes('.')
                             return (
                                 <div className={sty.choice} key={index}
-                                    style={{ width: core.isMobile ? '100%' : 'auto', minHeight: core.isMobile ? 44 : 50, height: 'auto', backgroundColor: isCodeChoice ? 'rgba(0,0,0,0.35)' : getChoiceStyle(choice), flexBasis: core.isMobile ? 'auto' : 'calc(50% - 8px)', padding: '10px 20px' }}
+                                    style={{ width: core.isMobile ? '100%' : 'auto', minHeight: core.isMobile ? 44 : 50, height: 'auto', backgroundColor: getChoiceStyle(choice), flexBasis: core.isMobile ? 'auto' : 'calc(50% - 8px)', padding: '10px 20px' }}
                                     onClick={() => choose(choice)}
                                 >
-                                    <h3 className={sty.choiceLbl} style={{ fontSize: core.isMobile ? 18 : 20, fontFamily: isCodeChoice ? "'Fira Code', 'Courier New', monospace" : "'Barlow Condensed'" }}>{choice}</h3>
+                                    <h3 className={sty.choiceLbl} style={{ fontSize: core.isMobile ? 18 : 20, fontFamily: isCodeChoice ? "'Fira Code', 'Courier New', monospace" : "'Barlow Condensed'", backgroundColor: (isCodeChoice && !SSGame.answers[SSGame.questIndex].hasOwnProperty('result')) ? 'rgba(0,0,0,0.35)' : 'transparent', padding: isCodeChoice ? '2px 8px' : '0', borderRadius: '6px', width: 'fit-content' }}>{choice}</h3>
                                 </div>
                             )
                         })}
