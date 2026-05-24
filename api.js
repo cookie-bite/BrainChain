@@ -389,6 +389,22 @@ module.exports.collection = (c) => DB.collection(c)
 
 app.get('/api', (req, res) => res.json({ message: 'From api with love' }))
 
+app.get('/api/db-status', async (req, res) => {
+    try {
+        const { collection } = require('./api');
+        const count = await collection('questions').countDocuments();
+        const topics = await collection('questions').distinct('topic');
+        res.json({ 
+            status: 'ok', 
+            count, 
+            topics,
+            dbUrlLength: process.env.DB_CONNECT ? process.env.DB_CONNECT.length : 0
+        });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+})
+
 app.use('/', express.static(path.join(`${__dirname}/client/dist`)))
 app.get('*', (req, res) => res.sendFile(path.join(`${__dirname}/client/dist/index.html`)))
 
