@@ -109,15 +109,31 @@ exports.genQuiz = async (topic, count) => {
     try {
         const { collection } = require('../api');
         
-        const cursor = await collection('questions').aggregate([
-            { $match: { topic: topic.toLowerCase() } },
-            { $sample: { size: count } }
-        ]);
+        console.log(`[genQuiz] Fetching questions for topic: ${topic} (count: ${count})`);
         
-        const questions = await cursor.toArray();
+        // Fetch all questions for the topic (avoiding $sample due to CosmosDB limitations/quirks)
+        const cursor = await collection('questions').find({ topic: topic.toLowerCase() });
+        const allQuestions = await cursor.toArray();
         
-        // Remove _id from returned items
-        return questions.map(q => {
+        console.log(`[genQuiz] Found ${allQuestions.length} questions in DB for topic: ${topic.toLowerCase()}`);
+        
+        if (allQuestions.length === 0) {
+            console.error(`[genQuiz] WARNING: No questions found for topic ${topic}! Returning empty array.`);
+            return [];
+        }
+
+        // Shuffle in memory
+        for (let i = allQuestions.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [allQuestions[i], allQuestions[j]] = [allQuestions[j], allQuestions[i]];
+        }
+        
+        // Take the requested count
+        const selected = allQuestions.slice(0, count);
+        console.log(`[genQuiz] Returning ${selected.length} questions for game.`);
+        
+        // Remove _id
+        return selected.map(q => {
             const { _id, ...rest } = q;
             return rest;
         });

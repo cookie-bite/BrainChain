@@ -40,6 +40,16 @@ const connectWS = () => {
         } else if (res.command === 'UPDT_GAME') {
             Object.assign(STIndicator, res.game)
         } else if (res.command === 'START_GAME') {
+            console.log('START_GAME received!', res.quiz ? `Quiz length: ${res.quiz.length}` : 'Quiz is undefined');
+            if (!res.quiz || res.quiz.length === 0) {
+                console.error('CRITICAL ERROR: Received empty quiz from server! Fallback to Board.');
+                STGame.ui = 'Board';
+                STScene.name = 'Game';
+                STUI.value.showIndicator = false;
+                STUI.value.showControls = false;
+                STUI.value.name = 'Game';
+                return;
+            }
             STClock.countdown = 3
             STGame.quiz = res.quiz
             STGame.answers = Array(res.quiz.length).fill({})
