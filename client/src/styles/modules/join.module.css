@@ -7,17 +7,188 @@
     overflow-y: hidden;
 }
 
+
+/* ── Lobby Area ── */
+
+.lobbyArea {
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+    overflow-y: auto;
+    padding-top: 100px;
+}
+
+.lobbyArea::-webkit-scrollbar {
+    display: none;
+}
+
+
+/* ── Filter Card ── */
+
+.filterCardWrap {
+    flex-shrink: 0;
+    margin-bottom: 25px;
+}
+
+.filterCard {
+    position: relative;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    width: 270px;
+    height: 270px;
+    padding: 18px;
+    border-radius: 24px;
+    border: 2px dashed rgba(255, 255, 255, 0.2);
+    backdrop-filter: saturate(180%) blur(20px);
+    -webkit-backdrop-filter: saturate(180%) blur(20px);
+    background-color: var(--thin-material);
+    cursor: pointer;
+    transition: border-color .25s ease, box-shadow .25s ease, background-color .25s ease;
+}
+
+/* Green glow ONLY when hovering the card itself, NOT filter buttons */
+.filterCard:hover:not(:has(.ring:hover, .fcDuration:hover)) {
+    border-color: var(--system-green);
+    box-shadow: 0 0 30px rgba(48, 209, 88, 0.2), inset 0 0 30px rgba(48, 209, 88, 0.06);
+    background-color: var(--ultrathin-material);
+}
+
+.filterCard:hover:not(:has(.ring:hover, .fcDuration:hover)) .fcCreate {
+    opacity: 1;
+}
+
+
+/* Header: topic ring (left) + token ring (right) */
+.fcHeader {
+    justify-content: space-between;
+    width: 100%;
+}
+
+/* Center: topic name + duration bar */
+.fcCenter {
+    position: absolute;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: calc(100% - 36px);
+    gap: 4px;
+    pointer-events: none;
+}
+
+.fcTopicLbl {
+    font-size: 34px;
+    font-weight: 700;
+    color: var(--primary-label);
+    text-align: center;
+    line-height: 1.1;
+}
+
+.fcDuration {
+    flex-direction: column;
+    align-items: center;
+    cursor: pointer;
+    padding: 6px 14px;
+    border-radius: 12px;
+    transition: background-color .15s, box-shadow .2s;
+    pointer-events: auto;
+}
+
+.fcDuration:hover {
+    background-color: var(--quaternary-fill);
+    box-shadow: 0 0 12px rgba(255, 255, 255, 0.08);
+}
+
+.fcDurationLbl {
+    font-size: 14px;
+    font-weight: 400;
+    color: var(--secondary-label);
+    margin-bottom: 6px;
+}
+
+/* Linear progress bar */
+.linearTrack {
+    width: 120px;
+    height: 3px;
+    border-radius: 2px;
+    background-color: var(--quaternary-fill);
+    overflow: hidden;
+}
+
+.linearFill {
+    height: 100%;
+    border-radius: 2px;
+    background-color: var(--primary-label);
+    transition: width 0.4s ease;
+}
+
+/* Bottom: create area with person icon */
+.fcCreate {
+    align-items: center;
+    justify-content: center;
+    padding: 4px 16px;
+    border-radius: 14px;
+    opacity: 0.4;
+    transition: opacity .25s;
+}
+
+
+/* ── Circular Progress Ring ── */
+
+.ring {
+    position: relative;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    border-radius: 50%;
+    background-color: rgba(255, 255, 255, 0.04);
+    transition: transform .15s ease, filter .25s ease, background-color .15s ease;
+}
+
+.ring:hover {
+    transform: scale(1.1);
+    background-color: rgba(255, 255, 255, 0.08);
+    filter: drop-shadow(0 0 10px var(--glow));
+}
+
+.ringSvg {
+    position: absolute;
+}
+
+.ringProgress {
+    transition: stroke-dashoffset 0.4s ease;
+}
+
+.ringContent {
+    position: relative;
+    align-items: center;
+    justify-content: center;
+}
+
+.ringStack {
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1px;
+}
+
+.ringValueLbl {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--secondary-label);
+    line-height: 1;
+}
+
+
+/* ── Game Cards Grid ── */
+
 .games {
     flex-wrap: wrap;
     justify-content: center;
     width: 80%;
-    padding: 150px 20px 30px;
+    padding: 0 20px 30px;
     gap: 20px;
-    overflow-y: auto;
-}
-
-.games::-webkit-scrollbar {
-    display: none;
 }
 
 .gameWrapper {
@@ -50,7 +221,6 @@
 
 .gameCard:hover {
     background-color: var(--ultrathin-material);
-    transition: all .2s ease-in-out;
 }
 
 .gameHeader {
@@ -98,10 +268,132 @@
     border-radius: 15px;
 }
 
-.gamePlayersLbl {
-    font-size: 20px;
-    font-weight: 500;
-    letter-spacing: 2px;
-    margin-right: -2px;
+
+/* ── Waiting / Countdown Area ── */
+
+.waitingArea {
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+}
+
+.waitingWrapper {
+    position: relative;
+    align-items: center;
+    justify-content: center;
+    width: 402px;
+    height: 402px;
+    border-radius: 28px;
+    backdrop-filter: saturate(180%) blur(20px);
+    -webkit-backdrop-filter: saturate(180%) blur(20px);
+    overflow: hidden;
+}
+
+.waitingCard {
+    position: absolute;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    width: 402px;
+    height: 402px;
+    padding: 15px;
+    border-radius: 28px;
+    backdrop-filter: saturate(180%);
+    -webkit-backdrop-filter: saturate(180%);
+    background-color: var(--thin-material);
+}
+
+.waitingHeader {
+    justify-content: space-between;
+    width: 100%;
+}
+
+.waitingToken {
+    align-items: center;
+    justify-content: center;
+}
+
+.waitingTokenLbl {
+    font-size: 25px;
+    font-weight: 600;
+    color: var(--secondary-label);
+    margin-right: 5px;
+}
+
+.waitingTopic {
+    position: absolute;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: calc(100% - 30px);
+}
+
+.waitingTopicLbl {
+    font-size: 44px;
+    font-weight: 600;
     color: var(--primary-label);
+}
+
+.waitingDurationLbl {
+    margin-top: 5px;
+    font-size: 22px;
+    font-weight: 400;
+    color: var(--secondary-label);
+}
+
+.waitingPlayers {
+    align-items: center;
+    justify-content: center;
+    padding: 2px 8px;
+    border-radius: 15px;
+}
+
+.countdown {
+    position: absolute;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    bottom: 50px;
+}
+
+.countdownLbl {
+    font-size: 36px;
+    font-weight: 700;
+    animation: pulse 1s ease-in-out infinite;
+}
+
+.countdownSbtl {
+    font-size: 14px;
+    font-weight: 400;
+    color: var(--secondary-label);
+    margin-top: 2px;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+.waitingBtns {
+    margin-top: 30px;
+    align-items: center;
+    justify-content: center;
+    border-radius: 25px;
+    background-color: var(--thin-material);
+    backdrop-filter: saturate(180%) blur(20px);
+    -webkit-backdrop-filter: saturate(180%) blur(20px);
+}
+
+.leaveBtn {
+    height: 50px;
+    padding: 0 40px;
+    border-radius: 25px;
+    background-color: #FF453A2B;
+}
+
+.leaveBtnLbl {
+    font-size: 30px;
+    font-weight: 700;
+    color: var(--system-red);
 }

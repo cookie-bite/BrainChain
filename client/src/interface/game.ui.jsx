@@ -3,6 +3,11 @@ import { motion, useAnimation } from 'framer-motion'
 import { useSnapshot } from 'valtio'
 import { Icon } from '../components/core.cmp'
 
+import 'katex/dist/katex.min.css'
+import { BlockMath } from 'react-katex'
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
+import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism'
+
 import { STGame, STIndicator, STProfile, STClock, STUI, STScene } from '../stores/app.store'
 
 import sty from '../styles/modules/game.module.css'
@@ -176,16 +181,35 @@ const Quiz = ({ ws, core }) => {
                 <div className={sty.quizQuest} style={{ width: core.isMobile ? '100%' : '50%', marginLeft: core.isMobile ? 0 : '50%', transform: core.isMobile ? 'none' : 'translateX(-50%)' }}>
                     <div className={sty.quest} style={{ padding: core.isMobile ? 20 : 0 }}>
                         <h2 className={sty.questLbl} style={{ fontSize: core.isMobile ? 28 : 36 }}>{SSGame.quiz[SSGame.questIndex].quest}</h2>
-                        {/* {SSGame.quiz[SSGame.questIndex].hasContent && <h1 className={sty.questContent} style={{ fontSize: core.isMobile ? 36 : 40 }}>{SSGame.quiz[SSGame.questIndex].content}</h1>} */}
+                        {SSGame.quiz[SSGame.questIndex].hasContent && (
+                            <div className={sty.questContentContainer} style={{ marginTop: '16px', width: '100%', alignItems: 'center', justifyContent: 'center' }}>
+                                {SSGame.quiz[SSGame.questIndex].contentType === 'code' && (
+                                    <SyntaxHighlighter language={SSGame.quiz[SSGame.questIndex].codeLanguage || "python"} style={vscDarkPlus} customStyle={{ borderRadius: '12px', padding: '16px', fontSize: core.isMobile ? '14px' : '17px', background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.1)', maxWidth: '90%', margin: '0 auto' }}>
+                                        {SSGame.quiz[SSGame.questIndex].content}
+                                    </SyntaxHighlighter>
+                                )}
+                                {SSGame.quiz[SSGame.questIndex].contentType === 'equation' && (
+                                    <div style={{ fontSize: core.isMobile ? '22px' : '28px', color: 'var(--white)', padding: '16px 24px', textAlign: 'center', background: 'transparent', borderRadius: '12px' }}>
+                                        <BlockMath math={SSGame.quiz[SSGame.questIndex].content} />
+                                    </div>
+                                )}
+                                {(!SSGame.quiz[SSGame.questIndex].contentType || SSGame.quiz[SSGame.questIndex].contentType === 'text') && (
+                                    <h1 className={sty.questContent} style={{ fontSize: core.isMobile ? 36 : 40, color: 'var(--system-gray1)' }}>
+                                        {SSGame.quiz[SSGame.questIndex].content}
+                                    </h1>
+                                )}
+                            </div>
+                        )}
                     </div>
-                    <div className={sty.choices} style={{ width: core.isMobile ? '100%' : '70%', padding: core.isMobile ? 20 : 0, gap: core.isMobile ? 20 : 30 }}>
+                    <div className={sty.choices} style={{ width: core.isMobile ? '100%' : '80%', padding: core.isMobile ? 20 : 0, gap: core.isMobile ? 12 : 16 }}>
                         {SSGame.quiz[SSGame.questIndex].choices.map((choice, index) => {
+                            const isCodeChoice = choice.startsWith('%') || choice.startsWith('!') || choice.includes('(') || choice.includes('.')
                             return (
                                 <div className={sty.choice} key={index}
-                                    style={{ width: core.isMobile ? '100%' : 250, height: core.isMobile ? 50 : 60, backgroundColor: getChoiceStyle(choice), flexBasis: core.isMobile ? 'auto' : 'calc(50% - 15px)' }}
+                                    style={{ width: core.isMobile ? '100%' : 'auto', minHeight: core.isMobile ? 44 : 50, height: 'auto', backgroundColor: getChoiceStyle(choice), flexBasis: core.isMobile ? 'auto' : 'calc(50% - 8px)', padding: '10px 20px' }}
                                     onClick={() => choose(choice)}
                                 >
-                                    <h3 className={sty.choiceLbl} style={{ fontSize: core.isMobile ? 26 : 30 }}>{choice}</h3>
+                                    <h3 className={sty.choiceLbl} style={{ fontSize: core.isMobile ? 18 : 20, fontFamily: isCodeChoice ? "'Fira Code', 'Courier New', monospace" : "'Barlow Condensed'", backgroundColor: (isCodeChoice && !SSGame.answers[SSGame.questIndex].hasOwnProperty('result')) ? 'rgba(0,0,0,0.35)' : 'transparent', padding: isCodeChoice ? '2px 8px' : '0', borderRadius: '6px', width: 'fit-content' }}>{choice}</h3>
                                 </div>
                             )
                         })}

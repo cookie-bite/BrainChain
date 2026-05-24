@@ -1,0 +1,26 @@
+services:
+  - type: web
+    name: brainchain
+    env: node
+    plan: free
+    buildCommand: npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DB_CONNECT
+        sync: false # MongoDB connection string (Azure Cosmos DB or MongoDB Atlas)
+      - key: ACS_TKN_SCT
+        generateValue: true # Generates a secure random secret key automatically
+      - key: RFS_TKN_SCT
+        generateValue: true # Generates a secure random secret key automatically
+      - key: PEPPER
+        generateValue: true # Generates a secure random pepper key automatically
+      - key: ACS_TKN_EXP
+        value: 15m
+      - key: RFS_TKN_EXP
+        value: 1y
+      - key: EMAIL_USER
+        sync: false # SMTP email address (e.g. Gmail)
+      - key: EMAIL_PASS
+        sync: false # SMTP app password

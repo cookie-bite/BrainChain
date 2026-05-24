@@ -2,7 +2,7 @@ import { useEffect } from 'react'
 import { useSnapshot } from 'valtio'
 import { usePostHog } from 'posthog-js/react'
 
-import { STGame, STGames, STIndicator, STProfile, STScene, STUI, STApp } from './stores/app.store'
+import { STGame, STGames, STIndicator, STProfile, STScene, STUI, STApp, STClock } from './stores/app.store'
 
 import { Scene } from './scene/core.scn'
 import { Interface } from './interface/core.ui'
@@ -36,10 +36,21 @@ const connectWS = () => {
             STScene.name = 'Lobby'
             STProfile.gameID = ''
             STUI.value.showIndicator = false
-            Object.assign(STIndicator, { id: '', topic: { name: 'Anatomy', icon: 'body' }, duration: 5, token: 20, players: { all: 2, joined: 0, list: [] } })
+            Object.assign(STIndicator, { id: '', topic: { name: 'Anatomy', icon: 'body' }, duration: 5, token: 20, createdAt: 0, players: { all: 2, joined: 0, list: [] } })
         } else if (res.command === 'UPDT_GAME') {
             Object.assign(STIndicator, res.game)
         } else if (res.command === 'START_GAME') {
+            console.log('START_GAME received!', res.quiz ? `Quiz length: ${res.quiz.length}` : 'Quiz is undefined');
+            if (!res.quiz || res.quiz.length === 0) {
+                console.error('CRITICAL ERROR: Received empty quiz from server! Fallback to Board.');
+                STGame.ui = 'Board';
+                STScene.name = 'Game';
+                STUI.value.showIndicator = false;
+                STUI.value.showControls = false;
+                STUI.value.name = 'Game';
+                return;
+            }
+            STClock.countdown = 3
             STGame.quiz = res.quiz
             STGame.answers = Array(res.quiz.length).fill({})
             STUI.value.showIndicator = false

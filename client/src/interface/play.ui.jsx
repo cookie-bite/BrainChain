@@ -1,3 +1,4 @@
+import { useEffect, useState, useRef, memo } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useSnapshot } from 'valtio'
 import { usePostHog } from 'posthog-js/react'
@@ -7,6 +8,41 @@ import { Icon, Matrix } from '../components/core.cmp'
 import sty from '../styles/modules/play.module.css'
 
 
+const CountdownTimer = memo(({ createdAt }) => {
+    const [countdown, setCountdown] = useState(() => {
+        if (!createdAt) return 60
+        return Math.max(0, 60 - Math.floor((Date.now() - createdAt) / 1000))
+    })
+    const countdownRef = useRef(null)
+
+    useEffect(() => {
+        if (!createdAt) return
+        // Calculate remaining time from server timestamp
+        const remaining = Math.max(0, 60 - Math.floor((Date.now() - createdAt) / 1000))
+        setCountdown(remaining)
+
+        if (remaining <= 0) return
+
+        countdownRef.current = setInterval(() => {
+            const left = Math.max(0, 60 - Math.floor((Date.now() - createdAt) / 1000))
+            setCountdown(left)
+            if (left <= 0) clearInterval(countdownRef.current)
+        }, 1000)
+
+        return () => clearInterval(countdownRef.current)
+    }, [createdAt])
+
+    if (!createdAt || countdown <= 0) return null
+
+    return (
+        <div className={sty.playCountdown}>
+            <h1 className={sty.playCountdownLbl} style={{ color: countdown <= 10 ? 'var(--system-red)' : 'var(--system-yellow)' }}>{countdown}s</h1>
+            <h5 className={sty.playCountdownSbtl}>Waiting for players...</h5>
+        </div>
+    )
+})
+
+
 export const Play = ({ ws, core }) => {
     const SSIndicator = useSnapshot(STIndicator)
     const SSProfile = useSnapshot(STProfile)
@@ -14,6 +50,7 @@ export const Play = ({ ws, core }) => {
     const posthog = usePostHog()
 
     const icons = {
+        'AI': 'hardware-chip',
         'Anatomy': 'body',
         'Art': 'color-palette',
         'Astronomy': 'planet',
@@ -31,14 +68,11 @@ export const Play = ({ ws, core }) => {
 
     const changeFilter = (filter) => {
         if (filter === 'topic') {
-            const topics = ['Anatomy', 'Astronomy', 'Cinema', 'Economics', 'Game', 'Geography', 'Mathematics', 'Mixed', 'Music', 'Sports', 'Technology']
+            const topics = ['AI', 'Anatomy', 'Astronomy', 'Cinema', 'Economics', 'Game', 'Geography', 'Mathematics', 'Mixed', 'Music', 'Sports', 'Technology']
             let newTopic = topics.at(1 + topics.indexOf(SSIndicator.topic.name) - topics.length)
             STIndicator.topic = { name: newTopic, icon: icons[newTopic] }
-        } else if (filter === 'players') {
-            const playersCount = [2, 3, 4, 6, 8]
-            STIndicator.players.all = playersCount.at(1 + playersCount.indexOf(SSIndicator.players.all) - playersCount.length)
         } else if (filter === 'duration') {
-            const durations = [5, 10, 15]
+            const durations = [5, 10, 15, 20, 25, 30]
             STIndicator.duration = durations.at(1 + durations.indexOf(SSIndicator.duration) - durations.length)
         } else if (filter === 'token') {
             const tokens = [20, 50, 100, 150, 200]
@@ -76,15 +110,6 @@ export const Play = ({ ws, core }) => {
                                 <h5 className={sty.filterSbtl}>{SSIndicator.topic.name}</h5>
                             </div>
                         </div>
-                        <div className={sty.filter} onClick={() => changeFilter('players')}>
-                            <div className={sty.filterIc}>
-                                <Icon name='person' size={22} color='--primary-tint' />
-                            </div>
-                            <div className={sty.filterBody}>
-                                <h4 className={sty.filterTtl}>Players</h4>
-                                <h5 className={sty.filterSbtl}>{`${SSIndicator.players.all} players`}</h5>
-                            </div>
-                        </div>
                         <div className={sty.filter} onClick={() => changeFilter('duration')}>
                             <div className={sty.filterIc}>
                                 <Icon name='reader' size={24} color='--primary-label' />
@@ -120,14 +145,14 @@ export const Play = ({ ws, core }) => {
                             <h2 className={sty.playTopicLbl}>{SSIndicator.topic.name}</h2>
                             <h5 className={sty.playDurationLbl}>{SSIndicator.duration} questions</h5>
                         </div>
+                        <CountdownTimer createdAt={SSIndicator.createdAt} />
                         <div className={sty.playPlayers}>
-                            {Array(SSIndicator.players.all).fill().map((player, index) => {
-                                return (
-                                    index < (SSProfile.gameID ? SSIndicator.players.joined : 1)
-                                        ? <Icon name='person' size={34} color='--system-orange' key={index} />
-                                        : <Icon name='person-o' size={34} color='--primary-tint' key={index} />
-                                )
-                            })}
+                            {SSProfile.gameID
+                                ? SSIndicator.players.list.map((player, index) => (
+                                    <Icon name='person' size={34} color={player.os === 'AI' ? '--primary-tint' : '--system-orange'} key={index} />
+                                ))
+                                : <Icon name='person' size={34} color='--system-orange' />
+                            }
                         </div>
                     </div>
                 </div>
