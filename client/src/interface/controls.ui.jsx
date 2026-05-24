@@ -18,10 +18,12 @@ export const Controls = ({ core }) => {
 
     const posthog = usePostHog()
 
-    const inActiveNavs = useAnimation()
-    const activeNavs = useAnimation()
-
-    const navs = ['Play', 'Discover', 'Tournaments', 'Community']
+    const navs = [
+        { name: 'Play', icon: 'play' },
+        { name: 'Discover', icon: 'compass' },
+        { name: 'Tournaments', icon: 'podium-o' },
+        { name: 'Community', icon: 'people' }
+    ]
 
 
     const Balance = () => {
@@ -68,12 +70,6 @@ export const Controls = ({ core }) => {
 
     useEffect(() => {
         posthog.capture('Navigated', { page: SSUI.value.name })
-
-        if (SSUI.value.name === 'Home') inActiveNavs.start({ width: 'unset', marginRight: '20px', opacity: 1 })
-        else {
-            inActiveNavs.start({ width: 0, marginRight: 0, opacity: 0 })
-            activeNavs.start({ width: 'unset', marginRight: '20px', opacity: 1 })
-        }
     }, [SSUI.value.name])
 
 
@@ -89,19 +85,17 @@ export const Controls = ({ core }) => {
                     {!core.isMobile && <Profile core={core} />}
 
                     <div className={sty.navbar} style={{ transform: `scale(${core.isMobile ? 0.60 : 1})` }}>
-                        <div className={sty.menu}>
+                        <div className={sty.menu} style={{ display: 'flex', flexDirection: 'row' }}>
                             <div className={sty.menuIc} onClick={() => STUI.value.name = 'Home'} >
-                                <Icon name='grid' size={24} color='--primary-tint' />
+                                <Icon name='grid' size={24} color={SSUI.value.name === 'Home' ? '--primary-tint' : '--secondary-label'} />
                             </div>
                             {navs.map((item) => {
                                 return (
-                                    <motion.div className={sty.menuItem} key={item}
-                                        onClick={() => STUI.value.name = item}
-                                        animate={SSUI.value.name === item ? activeNavs : inActiveNavs}
-                                        transition={{ ease: 'easeInOut', duration: 0.6 }}
+                                    <div className={sty.menuIc} key={item.name}
+                                        onClick={() => STUI.value.name = item.name}
                                     >
-                                        {item}
-                                    </motion.div>
+                                        <Icon name={item.icon} size={24} color={SSUI.value.name === item.name ? '--primary-tint' : '--secondary-label'} />
+                                    </div>
                                 )
                             })}
                         </div>
