@@ -2,7 +2,7 @@ import { useEffect } from 'react'
 import { useSnapshot } from 'valtio'
 import { usePostHog } from 'posthog-js/react'
 
-import { STGame, STGames, STIndicator, STProfile, STScene, STUI, STApp } from './stores/app.store'
+import { STGame, STGames, STIndicator, STProfile, STScene, STUI, STApp, STClock } from './stores/app.store'
 
 import { Scene } from './scene/core.scn'
 import { Interface } from './interface/core.ui'
@@ -40,6 +40,7 @@ const connectWS = () => {
         } else if (res.command === 'UPDT_GAME') {
             Object.assign(STIndicator, res.game)
         } else if (res.command === 'START_GAME') {
+            STClock.countdown = 3
             STGame.quiz = res.quiz
             STGame.answers = Array(res.quiz.length).fill({})
             STUI.value.showIndicator = false
