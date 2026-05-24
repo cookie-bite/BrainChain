@@ -62,7 +62,7 @@ const init = () => {
     Object.keys(games).forEach((id) => rooms[id] = {})
 }
 
-const startGameWithBots = (gameID) => {
+const startGameWithBots = async (gameID) => {
     if (!games[gameID]) return // already started or deleted
 
     const game = games[gameID]
@@ -84,7 +84,7 @@ const startGameWithBots = (gameID) => {
     // Move to liveGames and start
     game.players.all = game.players.joined
     liveGames[gameID] = game
-    liveGames[gameID].quiz = genQuiz(liveGames[gameID].topic.name, liveGames[gameID].duration)
+    liveGames[gameID].quiz = await genQuiz(liveGames[gameID].topic.name, liveGames[gameID].duration)
     delete games[gameID]
 
     // Deduct tokens from real players
