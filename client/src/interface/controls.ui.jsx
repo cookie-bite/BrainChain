@@ -86,13 +86,14 @@ export const Controls = ({ core }) => {
 
                     <div className={sty.navbar} style={{ transform: `scale(${core.isMobile ? 0.60 : 1})` }}>
                         <div className={sty.menu} style={{ display: 'flex', flexDirection: 'row' }}>
-                            <div className={sty.menuIc} onClick={() => STUI.value.name = 'Home'} >
+                            <div className={sty.menuIc} onClick={() => STUI.value.name = 'Home'} title="Home">
                                 <Icon name='grid' size={24} color={SSUI.value.name === 'Home' ? '--primary-tint' : '--secondary-label'} />
                             </div>
                             {navs.map((item) => {
                                 return (
                                     <div className={sty.menuIc} key={item.name}
                                         onClick={() => STUI.value.name = item.name}
+                                        title={item.name}
                                     >
                                         <Icon name={item.icon} size={24} color={SSUI.value.name === item.name ? '--primary-tint' : '--secondary-label'} />
                                     </div>
