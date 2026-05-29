@@ -374,9 +374,12 @@
 }
 
 .waitingBtns {
-    margin-top: 30px;
+    margin-top: 20px;
     align-items: center;
-    justify-content: center;
+    justify-content: space-between;
+    flex-direction: row;
+    width: 402px;
+    padding: 10px 15px;
     border-radius: 25px;
     background-color: var(--thin-material);
     backdrop-filter: saturate(180%) blur(20px);
@@ -385,7 +388,9 @@
 
 .leaveBtn {
     height: 50px;
-    padding: 0 40px;
+    width: 50px;
+    align-items: center;
+    justify-content: center;
     border-radius: 25px;
     background-color: #FF453A2B;
 }

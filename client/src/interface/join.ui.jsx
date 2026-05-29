@@ -168,13 +168,13 @@ export const Join = ({ ws, core }) => {
                                 </div>
                             </div>
                         </div>
-                        <div className={sty.waitingBtns} style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: '20px' }}>
-                            <button className={sty.leaveBtn} onClick={() => leaveGame()}>
-                                <h2 className={sty.leaveBtnLbl}>Leave</h2>
+                        <div className={sty.waitingBtns}>
+                            <button className={sty.leaveBtn} title="Leave" onClick={() => leaveGame()}>
+                                <Icon name='log-out' size={26} color='--system-red' />
                             </button>
                             <CountdownTimer createdAt={SSIndicator.createdAt} />
-                            <button className={sty.leaveBtn} onClick={() => ws.send(JSON.stringify({ command: 'START_GAME_NOW', id: SSProfile.gameID }))} style={{ backgroundColor: '#30D1582B' }}>
-                                <h2 className={sty.leaveBtnLbl} style={{ color: 'var(--system-green)' }}>Instant Start</h2>
+                            <button className={sty.leaveBtn} title="Instant Start" onClick={() => ws.send(JSON.stringify({ command: 'START_GAME_NOW', id: SSProfile.gameID }))} style={{ backgroundColor: '#30D1582B' }}>
+                                <Icon name='flash' size={26} color='--system-green' />
                             </button>
                         </div>
                     </motion.div>
