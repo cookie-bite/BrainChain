@@ -173,7 +173,7 @@ export const Join = ({ ws, core }) => {
                                 <Icon name='log-out' size={26} color='--system-red' />
                             </button>
                             <CountdownTimer createdAt={SSIndicator.createdAt} />
-                            <button className={sty.leaveBtn} title="Instant Start" onClick={() => ws.send(JSON.stringify({ command: 'START_GAME_NOW', id: SSProfile.gameID }))} style={{ backgroundColor: '#30D1582B' }}>
+                            <button className={sty.startBtn} title="Instant Start" onClick={() => ws.send(JSON.stringify({ command: 'START_GAME_NOW', id: SSProfile.gameID }))}>
                                 <Icon name='flash' size={26} color='--system-green' />
                             </button>
                         </div>

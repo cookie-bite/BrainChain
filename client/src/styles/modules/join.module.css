@@ -392,7 +392,26 @@
     align-items: center;
     justify-content: center;
     border-radius: 25px;
-    background-color: #FF453A2B;
+    background-color: #FF453A4D;
+    transition: background-color 0.2s;
+}
+
+.leaveBtn:hover {
+    background-color: #FF453A66;
+}
+
+.startBtn {
+    height: 50px;
+    width: 50px;
+    align-items: center;
+    justify-content: center;
+    border-radius: 25px;
+    background-color: #30D1584D;
+    transition: background-color 0.2s;
+}
+
+.startBtn:hover {
+    background-color: #30D15866;
 }
 
 .leaveBtnLbl {
