@@ -292,6 +292,11 @@ wss.on('connection', (ws) => {
 
             // Auto-start after 60 seconds
             gameTimers[gameID] = setTimeout(() => startGameWithBots(gameID), 60000)
+        } else if (req.command === 'START_GAME_NOW') {
+            if (games[req.id] && gameTimers[req.id]) {
+                clearTimeout(gameTimers[req.id])
+                startGameWithBots(req.id)
+            }
         } else if (req.command === 'SEND_ANSR') {
             if (!liveGames[req.id]) return
             if (req.answer) {

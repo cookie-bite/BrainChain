@@ -160,7 +160,7 @@ export const Join = ({ ws, core }) => {
                                     <h2 className={sty.waitingTopicLbl}>{SSIndicator.topic.name}</h2>
                                     <h5 className={sty.waitingDurationLbl}>{SSIndicator.duration} questions</h5>
                                 </div>
-                                <CountdownTimer createdAt={SSIndicator.createdAt} />
+
                                 <div className={sty.waitingPlayers}>
                                     {SSIndicator.players.list.map((player, index) => (
                                         <Icon name='person' size={34} color={player.os === 'AI' ? '--primary-tint' : '--system-orange'} key={index} />
@@ -168,9 +168,13 @@ export const Join = ({ ws, core }) => {
                                 </div>
                             </div>
                         </div>
-                        <div className={sty.waitingBtns}>
+                        <div className={sty.waitingBtns} style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: '20px' }}>
                             <button className={sty.leaveBtn} onClick={() => leaveGame()}>
                                 <h2 className={sty.leaveBtnLbl}>Leave</h2>
+                            </button>
+                            <CountdownTimer createdAt={SSIndicator.createdAt} />
+                            <button className={sty.leaveBtn} onClick={() => ws.send(JSON.stringify({ command: 'START_GAME_NOW', id: SSProfile.gameID }))} style={{ backgroundColor: '#30D1582B' }}>
+                                <h2 className={sty.leaveBtnLbl} style={{ color: 'var(--system-green)' }}>Instant Start</h2>
                             </button>
                         </div>
                     </motion.div>
