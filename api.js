@@ -1,5 +1,6 @@
 const { WebSocketServer, WebSocket } = require('ws')
 const { genRandom, genGame, genColor, genQuiz } = require('./utils/core.utils')
+const { getArcPuzzles, checkAnswer } = require('./utils/arc.utils')
 const { MongoClient, ObjectId } = require('mongodb')
 const { createServer } = require('http')
 const jwt = require('jsonwebtoken')
@@ -62,6 +63,12 @@ const init = () => {
     Object.keys(games).forEach((id) => rooms[id] = {})
 }
 
+
+
+// ARC Game Helpers
+
+// removed ARC specific handlers since they are merged into CREATE_GAME
+
 const startGameWithBots = async (gameID) => {
     if (!games[gameID]) return // already started or deleted
 
@@ -84,7 +91,14 @@ const startGameWithBots = async (gameID) => {
     // Move to liveGames and start
     game.players.all = game.players.joined
     liveGames[gameID] = game
-    liveGames[gameID].quiz = await genQuiz(liveGames[gameID].topic.name, liveGames[gameID].duration)
+    
+    if (liveGames[gameID].topic.name === 'Abstract') {
+        const puzzles = getArcPuzzles(liveGames[gameID].duration)
+        liveGames[gameID].quiz = puzzles.map(p => ({ id: p.id, train: p.train, testInput: p.testInput, solution: p.solution }))
+    } else {
+        liveGames[gameID].quiz = await genQuiz(liveGames[gameID].topic.name, liveGames[gameID].duration)
+    }
+    
     delete games[gameID]
 
     // Deduct tokens from real players
@@ -107,7 +121,14 @@ const startGameWithBots = async (gameID) => {
                 setTimeout(() => {
                     if (!liveGames[gameID]) return
                     const isCorrect = Math.random() > 0.45
-                    const answer = isCorrect ? q.correct : q.choices.find(c => c !== q.correct)
+                    
+                    let answer
+                    if (liveGames[gameID].topic.name === 'Abstract') {
+                        answer = isCorrect ? q.solution : [[0]]
+                    } else {
+                        answer = isCorrect ? q.correct : q.choices.find(c => c !== q.correct)
+                    }
+                    
                     liveGames[gameID].answers[player.id][index] = { answer, isTrue: isCorrect }
                     sendRoom(gameID, { command: 'UPDT_ANSR', answers: liveGames[gameID].answers })
 
@@ -300,7 +321,12 @@ wss.on('connection', (ws) => {
         } else if (req.command === 'SEND_ANSR') {
             if (!liveGames[req.id]) return
             if (req.answer) {
-                liveGames[req.id].answers[userID][req.index] = { answer: req.answer, isTrue: req.answer === liveGames[req.id].quiz[req.index].correct }
+                if (liveGames[req.id].topic.name === 'Abstract') {
+                    const isCorrect = checkAnswer(req.answer, liveGames[req.id].quiz[req.index].solution)
+                    liveGames[req.id].answers[userID][req.index] = { answer: req.answer, isTrue: isCorrect }
+                } else {
+                    liveGames[req.id].answers[userID][req.index] = { answer: req.answer, isTrue: req.answer === liveGames[req.id].quiz[req.index].correct }
+                }
                 sendRoom(req.id, { command: 'UPDT_ANSR', answers: liveGames[req.id].answers })
 
                 if (liveGames[req.id].answers[userID].findIndex(a => a.answer === '') === -1) {

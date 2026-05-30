@@ -23,3 +23,15 @@ export const STGame = proxy(({ quiz: [], answers: [], questIndex: 0, ui: 'Countd
 export const STClock = proxy({ countdown: 5, timer: 0, prevTimer: 0, startTime: 0 })
 
 export const STGames = proxy({ all: [], filtered: [] })
+
+// ARC-AGI Abstract Mode
+export const STArc = proxy({
+    ui: 'Lobby',          // 'Lobby' | 'Countdown' | 'Puzzle' | 'Result' | 'Board'
+    gameID: '',
+    players: [],
+    puzzles: [],          // [{id, train:[{input,output}], testInput}]
+    currentPuzzle: 0,     // active puzzle index
+    answers: [],          // per puzzle: null | grid[][] (submitted answer)
+    results: [],          // per puzzle: null | true | false
+    stats: []             // final leaderboard from server
+})

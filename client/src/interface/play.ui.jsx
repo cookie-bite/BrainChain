@@ -51,6 +51,7 @@ export const Play = ({ ws, core }) => {
 
     const icons = {
         'AI': 'hardware-chip',
+        'Abstract': 'extension-puzzle',
         'Anatomy': 'body',
         'Art': 'color-palette',
         'Astronomy': 'planet',
@@ -68,7 +69,7 @@ export const Play = ({ ws, core }) => {
 
     const changeFilter = (filter) => {
         if (filter === 'topic') {
-            const topics = ['AI', 'Anatomy', 'Astronomy', 'Cinema', 'Economics', 'Game', 'Geography', 'Mathematics', 'Mixed', 'Music', 'Sports', 'Technology']
+            const topics = ['Abstract', 'AI', 'Anatomy', 'Astronomy', 'Cinema', 'Economics', 'Game', 'Geography', 'Mathematics', 'Mixed', 'Music', 'Sports', 'Technology']
             let newTopic = topics.at(1 + topics.indexOf(SSIndicator.topic.name) - topics.length)
             STIndicator.topic = { name: newTopic, icon: icons[newTopic] }
         } else if (filter === 'duration') {
@@ -82,7 +83,11 @@ export const Play = ({ ws, core }) => {
 
     const createGame = () => {
         posthog.capture('Created Game')
-        ws.send(JSON.stringify({ command: 'CREATE_GAME', game: { ...SSIndicator }, user: { name: STProfile.name, color: STProfile.color } }))
+        if (SSIndicator.topic.name === 'Abstract') {
+            ws.send(JSON.stringify({ command: 'ARC_CREATE' }))
+        } else {
+            ws.send(JSON.stringify({ command: 'CREATE_GAME', game: { ...SSIndicator }, user: { name: STProfile.name, color: STProfile.color } }))
+        }
     }
 
     const leaveGame = () => {

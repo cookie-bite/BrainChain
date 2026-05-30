@@ -78,6 +78,10 @@ exports.genGame = (count = 20) => {
         {
             name: 'AI',
             icon: 'hardware-chip'
+        },
+        {
+            name: 'Abstract',
+            icon: 'extension-puzzle'
         }
     ]
 

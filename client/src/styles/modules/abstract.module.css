@@ -1,0 +1,623 @@
+/* ── ARC-AGI Abstract Mode Styles ── */
+
+/* ARC standard 10-colour palette */
+:root {
+    --arc-0: #111111;   /* black  */
+    --arc-1: #1565C0;   /* blue   */
+    --arc-2: #C62828;   /* red    */
+    --arc-3: #2E7D32;   /* green  */
+    --arc-4: #F9A825;   /* yellow */
+    --arc-5: #757575;   /* grey   */
+    --arc-6: #AD1457;   /* fuchsia*/
+    --arc-7: #E65100;   /* orange */
+    --arc-8: #00838F;   /* teal   */
+    --arc-9: #4E342E;   /* maroon */
+}
+
+/* ── Wrapper ── */
+
+.abstract {
+    position: absolute;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+.abstractBlur {
+    position: absolute;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+    backdrop-filter: saturate(180%) blur(20px);
+    -webkit-backdrop-filter: saturate(180%) blur(20px);
+    background-color: var(--thin-material);
+    overflow: hidden;
+}
+
+/* ── Countdown ── */
+
+.countdown {
+    font-size: 150px;
+    font-weight: 700;
+}
+
+
+/* ── Lobby ── */
+
+.lobby {
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 24px;
+}
+
+.lobbyCard {
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    padding: 32px 40px;
+    border-radius: 24px;
+    background: var(--ultrathin-material);
+    backdrop-filter: saturate(180%) blur(20px);
+    -webkit-backdrop-filter: saturate(180%) blur(20px);
+    border: 1px solid rgba(255,255,255,0.08);
+}
+
+.lobbyTitle {
+    font-size: 32px;
+    font-weight: 700;
+    font-family: 'Barlow Condensed';
+    letter-spacing: 1px;
+    color: var(--primary-label);
+}
+
+.lobbySubtitle {
+    font-size: 16px;
+    font-weight: 400;
+    color: var(--secondary-label);
+    text-align: center;
+    max-width: 320px;
+    line-height: 1.4;
+}
+
+.lobbyPlayers {
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.lobbyBtns {
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+}
+
+.playBtn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 50px;
+    padding: 0 36px;
+    border-radius: 25px;
+    background: linear-gradient(135deg, rgba(95,37,255,0.6), rgba(0,132,255,0.5));
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,0.15);
+    cursor: pointer;
+    transition: all 0.25s ease;
+}
+
+.playBtn:hover {
+    transform: scale(1.04);
+    box-shadow: 0 0 24px rgba(95,37,255,0.5);
+}
+
+.playBtnLbl {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--white);
+    font-family: 'Barlow Condensed';
+}
+
+.startBtn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 44px;
+    padding: 0 24px;
+    border-radius: 22px;
+    background: rgba(48,209,88,0.15);
+    border: 1px solid rgba(48,209,88,0.3);
+    cursor: pointer;
+    transition: all 0.25s ease;
+    gap: 6px;
+}
+
+.startBtn:hover {
+    background: rgba(48,209,88,0.25);
+}
+
+.startBtnLbl {
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--system-green);
+}
+
+.leaveBtn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 44px;
+    padding: 0 24px;
+    border-radius: 22px;
+    background: rgba(255,69,58,0.12);
+    border: 1px solid rgba(255,69,58,0.25);
+    cursor: pointer;
+    transition: all 0.25s ease;
+    gap: 6px;
+}
+
+.leaveBtn:hover {
+    background: rgba(255,69,58,0.22);
+}
+
+.leaveBtnLbl {
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--system-red);
+}
+
+
+/* ── Puzzle Area ── */
+
+.puzzle {
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    width: 100%;
+    height: 100%;
+    overflow-y: auto;
+    padding: 20px 0 40px;
+}
+
+.puzzleHeader {
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    max-width: 1100px;
+    padding: 0 24px;
+    margin-bottom: 16px;
+}
+
+.puzzleTitle {
+    font-size: 28px;
+    font-weight: 700;
+    font-family: 'Barlow Condensed';
+    color: var(--primary-label);
+    letter-spacing: 0.5px;
+}
+
+.puzzleNav {
+    align-items: center;
+    gap: 10px;
+}
+
+.puzzleNavDot {
+    width: 10px;
+    height: 10px;
+    border-radius: 5px;
+    background: var(--primary-fill);
+    transition: all 0.25s ease;
+    cursor: pointer;
+}
+
+.puzzleNavDotActive {
+    background: var(--system-yellow);
+    transform: scale(1.4);
+}
+
+.puzzleNavDotCorrect {
+    background: var(--system-green);
+}
+
+.puzzleNavDotWrong {
+    background: var(--system-red);
+}
+
+
+/* ── Timer ── */
+
+.timerBar {
+    align-items: center;
+    gap: 10px;
+}
+
+.timerLbl {
+    font-size: 24px;
+    font-weight: 700;
+    width: 3ch;
+    text-align: center;
+    transition: color 0.5s;
+}
+
+.timerTrack {
+    width: 120px;
+    height: 6px;
+    border-radius: 3px;
+    background: var(--primary-fill);
+    overflow: hidden;
+}
+
+.timerFill {
+    height: 100%;
+    border-radius: 3px;
+    background: var(--system-green);
+    transition: width 1s linear, background 1s;
+}
+
+
+/* ── Train Examples ── */
+
+.trainSection {
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    max-width: 1100px;
+    padding: 0 16px;
+    margin-bottom: 20px;
+}
+
+.trainLabel {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--secondary-label);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 10px;
+    align-self: flex-start;
+}
+
+.trainPairs {
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 16px;
+    width: 100%;
+}
+
+.trainPair {
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding: 12px;
+    border-radius: 14px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.07);
+}
+
+.trainPairArrow {
+    font-size: 22px;
+    align-self: center;
+    color: var(--system-gray1);
+}
+
+.trainPairLabel {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--tertiary-label);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+}
+
+
+/* ── ARC Grid ── */
+
+.gridWrapper {
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+}
+
+.gridRow {
+    flex-direction: row;
+}
+
+.gridCell {
+    box-sizing: border-box;
+    border: 1px solid rgba(255,255,255,0.06);
+}
+
+/* Interactive answer grid cell */
+.gridCellInteractive {
+    box-sizing: border-box;
+    border: 1px solid rgba(255,255,255,0.06);
+    cursor: pointer;
+    transition: filter 0.1s ease, transform 0.08s ease;
+}
+
+.gridCellInteractive:hover {
+    filter: brightness(1.4);
+    transform: scale(1.08);
+    z-index: 1;
+}
+
+.gridCellInteractive:active {
+    transform: scale(0.95);
+}
+
+
+/* ── Answer Section ── */
+
+.answerSection {
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    max-width: 1100px;
+    padding: 0 16px;
+    gap: 14px;
+}
+
+.answerLabel {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--secondary-label);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    align-self: flex-start;
+}
+
+.answerControls {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.colorPalette {
+    flex-direction: row;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.colorSwatch {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: all 0.15s ease;
+}
+
+.colorSwatchActive {
+    border-color: var(--white);
+    transform: scale(1.2);
+    box-shadow: 0 0 10px rgba(255,255,255,0.3);
+}
+
+.answerSizeCtrls {
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+}
+
+.sizeBtn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background: var(--primary-fill);
+    cursor: pointer;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--primary-label);
+    border: none;
+    transition: background 0.15s;
+}
+
+.sizeBtn:hover {
+    background: var(--secondary-fill);
+}
+
+.sizeInput {
+    width: 48px;
+    height: 32px;
+    background: transparent;
+    border: none;
+    color: var(--primary-label);
+    font-size: 16px;
+    font-weight: 600;
+    text-align: center;
+    outline: none;
+    font-family: inherit;
+    -moz-appearance: textfield;
+}
+
+.sizeInput::-webkit-outer-spin-button,
+.sizeInput::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.sizeLbl {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--secondary-label);
+    min-width: 60px;
+    text-align: center;
+}
+
+.submitBtn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 50px;
+    padding: 0 36px;
+    border-radius: 25px;
+    background: linear-gradient(135deg, rgba(48,209,88,0.35), rgba(0,132,255,0.25));
+    border: 1px solid rgba(48,209,88,0.35);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    align-self: center;
+}
+
+.submitBtn:hover {
+    transform: scale(1.04);
+    box-shadow: 0 0 20px rgba(48,209,88,0.3);
+}
+
+.submitBtnDisabled {
+    opacity: 0.4;
+    pointer-events: none;
+}
+
+.submitBtnLbl {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--white);
+    font-family: 'Barlow Condensed';
+}
+
+
+/* ── Result overlay ── */
+
+.resultOverlay {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0,0,0,0.55);
+    backdrop-filter: blur(8px);
+    z-index: 10;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.resultLbl {
+    font-size: 80px;
+    font-weight: 800;
+    font-family: 'Barlow Condensed';
+}
+
+.resultSublbl {
+    font-size: 22px;
+    font-weight: 400;
+    color: var(--secondary-label);
+}
+
+
+/* ── Board / Results ── */
+
+.board {
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    gap: 24px;
+}
+
+.boardTitle {
+    font-size: 42px;
+    font-weight: 800;
+    font-family: 'Barlow Condensed';
+    color: var(--primary-label);
+    letter-spacing: 1px;
+}
+
+.table {
+    position: relative;
+    align-items: center;
+    flex-direction: column;
+    border-radius: 18px;
+    background: var(--ultrathin-material);
+    backdrop-filter: saturate(180%) blur(20px);
+    -webkit-backdrop-filter: saturate(180%) blur(20px);
+    border: 1px solid rgba(255,255,255,0.08);
+    overflow: hidden;
+}
+
+.tableHead {
+    align-items: center;
+    padding: 10px 16px;
+    background: rgba(255,255,255,0.05);
+    width: 100%;
+}
+
+.tableHeadLbl {
+    align-items: center;
+    justify-content: center;
+    padding: 8px 16px;
+    min-width: 80px;
+}
+
+.tableBody {
+    flex-direction: column;
+    width: 100%;
+    padding: 8px;
+    gap: 4px;
+}
+
+.tableBodyRow {
+    align-items: center;
+    border-radius: 10px;
+    padding: 4px 0;
+    transition: background 0.2s;
+}
+
+.tableBodyLbl {
+    font-size: 20px;
+    font-weight: 500;
+    padding: 8px 16px;
+    text-align: center;
+    min-width: 80px;
+}
+
+.boardLeaveBtn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 50px;
+    padding: 0 40px;
+    border-radius: 25px;
+    background-color: rgba(255,69,58,0.15);
+    backdrop-filter: saturate(180%) blur(20px);
+    border: 1px solid rgba(255,69,58,0.25);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.boardLeaveBtn:hover {
+    background-color: rgba(255,69,58,0.25);
+}
+
+.boardLeaveBtnLbl {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--system-red);
+}
+
+
+/* ── Timeout ── */
+
+.timeout {
+    align-items: center;
+    justify-content: center;
+}
+
+.timeoutLbl {
+    font-size: 100px;
+    font-weight: 600;
+    color: var(--system-yellow);
+}

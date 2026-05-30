@@ -2,7 +2,7 @@ import { useEffect } from 'react'
 import { useSnapshot } from 'valtio'
 import { usePostHog } from 'posthog-js/react'
 
-import { STGame, STGames, STIndicator, STProfile, STScene, STUI, STApp, STClock } from './stores/app.store'
+import { STGame, STGames, STIndicator, STProfile, STScene, STUI, STApp, STClock, STArc } from './stores/app.store'
 
 import { Scene } from './scene/core.scn'
 import { Interface } from './interface/core.ui'
@@ -51,11 +51,22 @@ const connectWS = () => {
                 return;
             }
             STClock.countdown = 3
-            STGame.quiz = res.quiz
-            STGame.answers = Array(res.quiz.length).fill({})
-            STUI.value.showIndicator = false
-            STUI.value.showControls = false
-            STUI.value.name = 'Game'
+            if (STIndicator.topic.name === 'Abstract') {
+                STArc.puzzles = res.quiz
+                STArc.currentPuzzle = 0
+                STArc.answers = Array(res.quiz.length).fill(null)
+                STArc.results = Array(res.quiz.length).fill(null)
+                STArc.ui = 'Countdown'
+                STUI.value.showIndicator = false
+                STUI.value.showControls = false
+                STUI.value.name = 'Abstract'
+            } else {
+                STGame.quiz = res.quiz
+                STGame.answers = Array(res.quiz.length).fill({})
+                STUI.value.showIndicator = false
+                STUI.value.showControls = false
+                STUI.value.name = 'Game'
+            }
         } else if (res.command === 'UPDT_GAMES') {
             let games = res.games
                 .sort((a, b) => a.token - b.token)
@@ -70,6 +81,12 @@ const connectWS = () => {
             STGames.filtered = games
         } else if (res.command === 'UPDT_ANSR') {
             STIndicator.answers = res.answers
+            if (STIndicator.topic.name === 'Abstract') {
+                const myAnswers = res.answers[STProfile.id]
+                if (myAnswers) {
+                    STArc.results = myAnswers.map(a => a.isTrue)
+                }
+            }
         } else if (res.command === 'UPDT_PLYRS') {
             STIndicator.players = res.players
         } else if (res.command === 'UPDT_BLNC') {
@@ -81,8 +98,12 @@ const connectWS = () => {
                     STGame.winner = res.winner
                     STGame.ui = 'Winner'
                     STScene.name = 'Winner'
+                    if (STUI.value.name === 'Abstract') {
+                        STUI.value.name = 'Game'
+                    }
                 }
             }, STGame.ui !== 'Board' ? 2000 : 0)
+
         }
     }
 

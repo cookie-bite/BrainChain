@@ -71,13 +71,14 @@ const Ring = ({ progress, color, glow, size = 60, radius = 24, onClick, children
 /* ── Constants ── */
 
 const icons = {
+    'Abstract': 'extension-puzzle',
     'AI': 'hardware-chip', 'Anatomy': 'body', 'Art': 'color-palette',
     'Astronomy': 'planet', 'Cinema': 'film', 'Economics': 'bar-chart',
     'Game': 'game-controller', 'Geography': 'compass', 'Mathematics': 'calculator',
     'Mixed': 'earth', 'Music': 'musical-notes', 'Sports': 'basketball', 'Technology': 'code-slash'
 }
 
-const topicList = ['All', 'AI', 'Anatomy', 'Astronomy', 'Cinema', 'Economics', 'Game', 'Geography', 'Mathematics', 'Mixed', 'Music', 'Sports', 'Technology']
+const topicList = ['All', 'Abstract', 'AI', 'Anatomy', 'Astronomy', 'Cinema', 'Economics', 'Game', 'Geography', 'Mathematics', 'Mixed', 'Music', 'Sports', 'Technology']
 const durationList = ['All', 5, 10, 15, 20, 25, 30]
 const tokenList = ['All', 20, 50, 100, 150, 200]
 
@@ -105,11 +106,14 @@ export const Join = ({ ws, core }) => {
         STGames.filtered = f
     }, [topicF, durationF, tokenF, SSGames.all])
 
-    const getParams = () => ({
-        topic: { name: topicF !== 'All' ? topicF : 'Mixed', icon: icons[topicF !== 'All' ? topicF : 'Mixed'] },
-        duration: durationF !== 'All' ? durationF : 5,
-        token: tokenF !== 'All' ? tokenF : 20
-    })
+    const getParams = () => {
+        const isAbstract = topicF === 'Abstract'
+        return {
+            topic: { name: isAbstract ? 'Abstract' : (topicF !== 'All' ? topicF : 'Mixed'), icon: icons[isAbstract ? 'Abstract' : (topicF !== 'All' ? topicF : 'Mixed')] },
+            duration: isAbstract ? 3 : (durationF !== 'All' ? durationF : 5),
+            token: tokenF !== 'All' ? tokenF : 20
+        }
+    }
 
     const createGame = () => {
         posthog.capture('Created Game')
