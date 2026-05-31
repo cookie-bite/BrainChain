@@ -110,7 +110,7 @@ export const Join = ({ ws, core }) => {
         const isAbstract = topicF === 'Abstract'
         return {
             topic: { name: isAbstract ? 'Abstract' : (topicF !== 'All' ? topicF : 'Mixed'), icon: icons[isAbstract ? 'Abstract' : (topicF !== 'All' ? topicF : 'Mixed')] },
-            duration: isAbstract ? 3 : (durationF !== 'All' ? durationF : 5),
+            duration: durationF !== 'All' ? durationF : (isAbstract ? 3 : 5),
             token: tokenF !== 'All' ? tokenF : 20
         }
     }

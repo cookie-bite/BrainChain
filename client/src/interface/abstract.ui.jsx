@@ -217,7 +217,7 @@ const PuzzleScreen = ({ ws }) => {
     const [gridRows, setGridRows] = useState(initialSize.rows)
     const [gridCols, setGridCols] = useState(initialSize.cols)
     const [selectedColor, setSelectedColor] = useState(0)
-    const [timer, setTimer] = useState(PUZZLE_TIME)
+    const [timer, setTimer] = useState(0)
     const [submitted, setSubmitted] = useState(false)
     const [resultVisible, setResultVisible] = useState(false)
     const timerRef = useRef(null)
@@ -232,24 +232,17 @@ const PuzzleScreen = ({ ws }) => {
         setSelectedColor(0)
         setSubmitted(false)
         setResultVisible(false)
-        setTimer(PUZZLE_TIME)
+        // timer is NOT reset so it tracks total time spent
     }, [SS.currentPuzzle, puzzle])
 
-    // Timer countdown
+    // Timer count up
     useEffect(() => {
         if (submitted) return
         timerRef.current = setInterval(() => {
-            setTimer(t => {
-                if (t <= 1) {
-                    clearInterval(timerRef.current)
-                    handleSubmit(true) // auto-submit on timeout
-                    return 0
-                }
-                return t - 1
-            })
+            setTimer(t => t + 1)
         }, 1000)
         return () => clearInterval(timerRef.current)
-    }, [SS.currentPuzzle, submitted])
+    }, [submitted])
 
     const resizeGrid = (newRows, newCols) => {
         const r = Math.max(1, Math.min(30, newRows))
@@ -294,7 +287,7 @@ const PuzzleScreen = ({ ws }) => {
             id: STProfile.gameID,
             index: SS.currentPuzzle,
             answer: grid,
-            timeSpent: PUZZLE_TIME - timer
+            timeSpent: timer
         }))
     }
 
@@ -318,8 +311,7 @@ const PuzzleScreen = ({ ws }) => {
 
     if (!puzzle) return null
 
-    const timerPct = (timer / PUZZLE_TIME) * 100
-    const timerColor = timer > 30 ? 'var(--system-green)' : timer > 10 ? 'var(--system-orange)' : 'var(--system-red)'
+    const timerColor = 'var(--system-blue)'
     const currentResult = SS.results[SS.currentPuzzle]
 
     return (
@@ -342,10 +334,7 @@ const PuzzleScreen = ({ ws }) => {
                 </div>
 
                 <div className={sty.timerBar}>
-                    <h3 className={sty.timerLbl} style={{ color: timerColor }}>{timer}</h3>
-                    <div className={sty.timerTrack}>
-                        <div className={sty.timerFill} style={{ width: `${timerPct}%`, background: timerColor }} />
-                    </div>
+                    <h3 className={sty.timerLbl} style={{ color: timerColor, width: 'auto', minWidth: '4ch' }}>{timer}s</h3>
                 </div>
             </div>
 
